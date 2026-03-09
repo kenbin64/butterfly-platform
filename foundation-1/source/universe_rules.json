@@ -1,0 +1,164 @@
+{
+  "universe": {
+    "name": "Foundation-1",
+    "description": "Dimensional scaffold defining primitives, manifolds, substrates, processes, and manifestation rules."
+  },
+
+  "dimensions": {
+    "order": [
+      "point",
+      "line",
+      "plane",
+      "volume",
+      "object",
+      "motion",
+      "awareness",
+      "expression",
+      "source"
+    ],
+    "rules": {
+      "emergence_is_sequential": true,
+      "no_dimension_can_reference_future_dimensions": true,
+      "higher_dimensions_extend_lower_dimensions": true,
+      "nothing_exists_outside_foundation_1": true
+    }
+  },
+
+  "primitives": {
+    "point": {
+      "identity_required": true,
+      "stores_no_attributes": true,
+      "is_seed_of_all_dimensions": true
+    },
+    "dimension": {
+      "defines_axis_of_variation": true,
+      "cannot_store_values": true,
+      "must_be_declared_before_use": true
+    },
+    "wave_primitives": {
+      "frequency": "float",
+      "wavelength": "float",
+      "amplitude": "float",
+      "phase": "float",
+      "bandwidth": "float",
+      "shared_by_sound_and_light": true
+    },
+    "rules": {
+      "primitives_are_pure": true,
+      "primitives_cannot_compute": true,
+      "primitives_define_structure_not_data": true
+    }
+  },
+
+  "manifolds": {
+    "definition": "Continuous spaces of possibility. They do not store values; they interpret coordinates.",
+    "requirements": {
+      "must_define_dimensions": true,
+      "must_be_pure_functions": true,
+      "must_not_store_state": true,
+      "must_not_duplicate_data": true
+    },
+    "examples": {
+      "wave": ["frequency", "wavelength", "amplitude", "phase", "bandwidth"],
+      "color": ["hue", "saturation", "brightness"],
+      "sound": ["frequency", "amplitude", "phase"],
+      "spatial": ["x", "y", "z"],
+      "temporal": ["t"]
+    }
+  },
+
+  "entities": {
+    "definition": "Parameter bundles referencing manifolds. They do not store attributes, only coordinates.",
+    "rules": {
+      "entities_must_use_getters_setters": true,
+      "entities_cannot_store_redundant_values": true,
+      "entities_reference_manifolds_not_data": true
+    }
+  },
+
+  "processes": {
+    "definition": "Micro-operations that do only what is needed when needed.",
+    "rules": {
+      "processes_are_stateless": true,
+      "processes_must_be_context_aware": true,
+      "processes_must_not_compute_global_state": true,
+      "processes_must_only_operate_on_deltas": true
+    },
+    "examples": [
+      "delta_detection",
+      "neighbor_propagation",
+      "visibility_filtering",
+      "interpolation",
+      "absorption_sampling",
+      "reflection_sampling"
+    ]
+  },
+
+  "substrates": {
+    "definition": "Rule-sets that interpret manifolds and produce manifestation packets.",
+    "rules": {
+      "substrates_must_be_pure": true,
+      "substrates_cannot_store_state": true,
+      "substrates_cannot_compute_values": true,
+      "substrates_interpret_only": true,
+      "substrates_must_output_manifestation_packets": true
+    },
+    "examples": [
+      "pixel_substrate",
+      "sound_channel_substrate",
+      "lighting_substrate",
+      "physics_substrate",
+      "music_substrate"
+    ]
+  },
+
+  "manifestation_packets": {
+    "definition": "The only values that become bits and bytes.",
+    "rules": {
+      "packets_are_final": true,
+      "packets_cannot_reference_internal_state": true,
+      "packets_must_be_deterministic": true,
+      "packets_must_be_minimal": true
+    },
+    "examples": {
+      "pixel": ["x", "y", "color"],
+      "sound": ["channel", "frequency", "amplitude", "phase"],
+      "motion": ["position", "velocity"],
+      "light": ["hue", "intensity"]
+    }
+  },
+
+  "context_rules": {
+    "delta_only": true,
+    "viewport_only": true,
+    "static_geometry_is_never_recomputed": true,
+    "entities_must_know_neighbors": true,
+    "entities_must_know_context": true,
+    "manifolds_are_single_source_of_truth": true
+  },
+
+  "non_redundancy_rules": {
+    "no_value_stored_twice": true,
+    "no_computation_of_known_values": true,
+    "no_caches_of_derived_values": true,
+    "no_global_state": true,
+    "no_hidden_state": true
+  },
+
+  "bits_and_bytes": {
+    "definition": "Final encoding layer for hardware.",
+    "rules": {
+      "engine_never_computes_bits": true,
+      "engine_never_stores_bits": true,
+      "hardware_receives_only_packets": true,
+      "bits_are_manifestation_not_meaning": true
+    }
+  },
+
+  "identity_and_continuity": {
+    "unique_identity_required": true,
+    "dimensional_placement_must_be_stable": true,
+    "universe_must_be_deterministic": true,
+    "no_cross_dimension_leaks": true
+  }
+}

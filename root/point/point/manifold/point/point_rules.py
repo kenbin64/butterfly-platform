@@ -1,0 +1,1 @@
+# Rules for point dimension

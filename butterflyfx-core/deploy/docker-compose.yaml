@@ -1,0 +1,12 @@
+services:
+  core:
+    build: ..
+    image: butterflyfx/core:dev
+    restart: unless-stopped
+    environment:
+      - CORE_PORT=${CORE_PORT:-8081}
+      - DEV_CAPABILITY=${DEV_CAPABILITY:-allow}
+      - KEY_SEED=${KEY_SEED:-00112233aabbccddeeff00112233aabb}
+    ports:
+      - "${CORE_PORT:-8081}:8081"
+    command: ["uvicorn", "butterflyfx_core.core_service.app:app", "--host", "0.0.0.0", "--port", "8081"]

@@ -1,0 +1,326 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Foundation-1 Universe Rules Schema",
+  "type": "object",
+
+  "properties": {
+    "universe": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "description"]
+    },
+
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 9,
+          "uniqueItems": true
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "emergence_is_sequential": { "type": "boolean" },
+            "no_dimension_can_reference_future_dimensions": { "type": "boolean" },
+            "higher_dimensions_extend_lower_dimensions": { "type": "boolean" },
+            "nothing_exists_outside_foundation_1": { "type": "boolean" }
+          },
+          "required": [
+            "emergence_is_sequential",
+            "no_dimension_can_reference_future_dimensions",
+            "higher_dimensions_extend_lower_dimensions",
+            "nothing_exists_outside_foundation_1"
+          ]
+        }
+      },
+      "required": ["order", "rules"]
+    },
+
+    "primitives": {
+      "type": "object",
+      "properties": {
+        "point": {
+          "type": "object",
+          "properties": {
+            "identity_required": { "type": "boolean" },
+            "stores_no_attributes": { "type": "boolean" },
+            "is_seed_of_all_dimensions": { "type": "boolean" }
+          },
+          "required": [
+            "identity_required",
+            "stores_no_attributes",
+            "is_seed_of_all_dimensions"
+          ]
+        },
+        "dimension": {
+          "type": "object",
+          "properties": {
+            "defines_axis_of_variation": { "type": "boolean" },
+            "cannot_store_values": { "type": "boolean" },
+            "must_be_declared_before_use": { "type": "boolean" }
+          },
+          "required": [
+            "defines_axis_of_variation",
+            "cannot_store_values",
+            "must_be_declared_before_use"
+          ]
+        },
+        "wave_primitives": {
+          "type": "object",
+          "properties": {
+            "frequency": { "type": "string" },
+            "wavelength": { "type": "string" },
+            "amplitude": { "type": "string" },
+            "phase": { "type": "string" },
+            "bandwidth": { "type": "string" },
+            "shared_by_sound_and_light": { "type": "boolean" }
+          },
+          "required": [
+            "frequency",
+            "wavelength",
+            "amplitude",
+            "phase",
+            "bandwidth",
+            "shared_by_sound_and_light"
+          ]
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "primitives_are_pure": { "type": "boolean" },
+            "primitives_cannot_compute": { "type": "boolean" },
+            "primitives_define_structure_not_data": { "type": "boolean" }
+          },
+          "required": [
+            "primitives_are_pure",
+            "primitives_cannot_compute",
+            "primitives_define_structure_not_data"
+          ]
+        }
+      },
+      "required": ["point", "dimension", "wave_primitives", "rules"]
+    },
+
+    "manifolds": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "must_define_dimensions": { "type": "boolean" },
+            "must_be_pure_functions": { "type": "boolean" },
+            "must_not_store_state": { "type": "boolean" },
+            "must_not_duplicate_data": { "type": "boolean" }
+          },
+          "required": [
+            "must_define_dimensions",
+            "must_be_pure_functions",
+            "must_not_store_state",
+            "must_not_duplicate_data"
+          ]
+        },
+        "examples": { "type": "object" }
+      },
+      "required": ["definition", "requirements", "examples"]
+    },
+
+    "entities": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "entities_must_use_getters_setters": { "type": "boolean" },
+            "entities_cannot_store_redundant_values": { "type": "boolean" },
+            "entities_reference_manifolds_not_data": { "type": "boolean" }
+          },
+          "required": [
+            "entities_must_use_getters_setters",
+            "entities_cannot_store_redundant_values",
+            "entities_reference_manifolds_not_data"
+          ]
+        }
+      },
+      "required": ["definition", "rules"]
+    },
+
+    "processes": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "processes_are_stateless": { "type": "boolean" },
+            "processes_must_be_context_aware": { "type": "boolean" },
+            "processes_must_not_compute_global_state": { "type": "boolean" },
+            "processes_must_only_operate_on_deltas": { "type": "boolean" }
+          },
+          "required": [
+            "processes_are_stateless",
+            "processes_must_be_context_aware",
+            "processes_must_not_compute_global_state",
+            "processes_must_only_operate_on_deltas"
+          ]
+        },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["definition", "rules", "examples"]
+    },
+
+    "substrates": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "substrates_must_be_pure": { "type": "boolean" },
+            "substrates_cannot_store_state": { "type": "boolean" },
+            "substrates_cannot_compute_values": { "type": "boolean" },
+            "substrates_interpret_only": { "type": "boolean" },
+            "substrates_must_output_manifestation_packets": { "type": "boolean" }
+          },
+          "required": [
+            "substrates_must_be_pure",
+            "substrates_cannot_store_state",
+            "substrates_cannot_compute_values",
+            "substrates_interpret_only",
+            "substrates_must_output_manifestation_packets"
+          ]
+        },
+        "examples": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["definition", "rules", "examples"]
+    },
+
+    "manifestation_packets": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "packets_are_final": { "type": "boolean" },
+            "packets_cannot_reference_internal_state": { "type": "boolean" },
+            "packets_must_be_deterministic": { "type": "boolean" },
+            "packets_must_be_minimal": { "type": "boolean" }
+          },
+          "required": [
+            "packets_are_final",
+            "packets_cannot_reference_internal_state",
+            "packets_must_be_deterministic",
+            "packets_must_be_minimal"
+          ]
+        },
+        "examples": { "type": "object" }
+      },
+      "required": ["definition", "rules", "examples"]
+    },
+
+    "context_rules": {
+      "type": "object",
+      "properties": {
+        "delta_only": { "type": "boolean" },
+        "viewport_only": { "type": "boolean" },
+        "static_geometry_is_never_recomputed": { "type": "boolean" },
+        "entities_must_know_neighbors": { "type": "boolean" },
+        "entities_must_know_context": { "type": "boolean" },
+        "manifolds_are_single_source_of_truth": { "type": "boolean" }
+      },
+      "required": [
+        "delta_only",
+        "viewport_only",
+        "static_geometry_is_never_recomputed",
+        "entities_must_know_neighbors",
+        "entities_must_know_context",
+        "manifolds_are_single_source_of_truth"
+      ]
+    },
+
+    "non_redundancy_rules": {
+      "type": "object",
+      "properties": {
+        "no_value_stored_twice": { "type": "boolean" },
+        "no_computation_of_known_values": { "type": "boolean" },
+        "no_caches_of_derived_values": { "type": "boolean" },
+        "no_global_state": { "type": "boolean" },
+        "no_hidden_state": { "type": "boolean" }
+      },
+      "required": [
+        "no_value_stored_twice",
+        "no_computation_of_known_values",
+        "no_caches_of_derived_values",
+        "no_global_state",
+        "no_hidden_state"
+      ]
+    },
+
+    "bits_and_bytes": {
+      "type": "object",
+      "properties": {
+        "definition": { "type": "string" },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "engine_never_computes_bits": { "type": "boolean" },
+            "engine_never_stores_bits": { "type": "boolean" },
+            "hardware_receives_only_packets": { "type": "boolean" },
+            "bits_are_manifestation_not_meaning": { "type": "boolean" }
+          },
+          "required": [
+            "engine_never_computes_bits",
+            "engine_never_stores_bits",
+            "hardware_receives_only_packets",
+            "bits_are_manifestation_not_meaning"
+          ]
+        }
+      },
+      "required": ["definition", "rules"]
+    },
+
+    "identity_and_continuity": {
+      "type": "object",
+      "properties": {
+        "unique_identity_required": { "type": "boolean" },
+        "dimensional_placement_must_be_stable": { "type": "boolean" },
+        "universe_must_be_deterministic": { "type": "boolean" },
+        "no_cross_dimension_leaks": { "type": "boolean" }
+      },
+      "required": [
+        "unique_identity_required",
+        "dimensional_placement_must_be_stable",
+        "universe_must_be_deterministic",
+        "no_cross_dimension_leaks"
+      ]
+    }
+  },
+
+  "required": [
+    "universe",
+    "dimensions",
+    "primitives",
+    "manifolds",
+    "entities",
+    "processes",
+    "substrates",
+    "manifestation_packets",
+    "context_rules",
+    "non_redundancy_rules",
+    "bits_and_bytes",
+    "identity_and_continuity"
+  ]
+}

@@ -1,0 +1,1274 @@
+ th t<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrickBreaker3D - Manifold Audio Edition | ButterflyFX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Rajdhani', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #000; color: #fff; overflow: hidden; }
+        #canvas { display: block; width: 100%; height: 100vh; }
+        #brandingCanvas { position: absolute; left: 0; top: 0; width: 300px; height: 100vh; z-index: 50; }
+        #logoContainer { position: absolute; left: 0; top: 0; width: 320px; height: 180px; z-index: 51; padding: 15px; }
+        #titleBanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(180deg, rgba(0,20,40,0.95) 0%, rgba(0,10,20,0.8) 70%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            pointer-events: none;
+        }
+        #gameTitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #00ffcc 0%, #00ff88 25%, #ffaa00 50%, #ff6600 75%, #ff0066 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGradient 4s ease infinite, titleGlow 2s ease-in-out infinite alternate;
+            text-shadow: 0 0 30px rgba(0,255,200,0.5);
+            filter: drop-shadow(0 0 20px rgba(0,255,200,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.8));
+        }
+        @keyframes titleGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 20px rgba(0,255,200,0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.8)); }
+            100% { filter: drop-shadow(0 0 35px rgba(0,255,200,0.9)) drop-shadow(0 4px 8px rgba(0,0,0,0.8)); }
+        }
+        #subtitleBanner {
+            position: absolute;
+            top: 65px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 201;
+            pointer-events: none;
+        }
+        #gameSubtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 8px;
+            color: #00ffcc;
+            text-transform: uppercase;
+            opacity: 0.8;
+            text-shadow: 0 0 10px rgba(0,255,200,0.5);
+        }
+        #controlsPanel { position: absolute; left: 10px; top: 100px; width: 280px; background: rgba(0,20,40,0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(0,255,204,0.4); z-index: 100; font-size: 12px; color: #00ffcc; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,255,200,0.15), inset 0 1px 0 rgba(255,255,255,0.1); }
+        .control-item { margin: 8px 0; color: #00ffcc; font-family: 'Rajdhani', sans-serif; font-weight: 500; }
+        .key { background: linear-gradient(135deg, #1a2a3e 0%, #0d1a2a 100%); padding: 3px 8px; border-radius: 4px; font-family: 'Orbitron', monospace; color: #00ff88; font-size: 10px; border: 1px solid rgba(0,255,136,0.3); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        #hud { position: absolute; top: 100px; right: 20px; font-size: 18px; font-weight: 700; text-shadow: 0 0 15px rgba(0,255,200,0.8); z-index: 100; color: #00ffcc; font-family: 'Orbitron', sans-serif; background: rgba(0,20,40,0.7); padding: 15px 20px; border-radius: 12px; border: 1px solid rgba(0,255,204,0.3); backdrop-filter: blur(10px); }
+        #score, #level, #bricksLeft { margin-bottom: 12px; }
+        #energy { margin-bottom: 0; color: #ffaa00; }
+        .hud-label { font-family: 'Rajdhani', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: 2px; opacity: 0.7; display: block; margin-bottom: 2px; }
+        .hud-value { font-size: 24px; }
+        #audioStatus { position: absolute; bottom: 20px; right: 20px; font-size: 14px; background: rgba(0,20,40,0.85); padding: 15px; border-radius: 12px; border: 1px solid rgba(0,255,204,0.3); z-index: 100; color: #00ff88; font-family: 'Rajdhani', sans-serif; backdrop-filter: blur(10px); }
+        #poweredBy {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            color: rgba(0,255,200,0.5);
+            letter-spacing: 2px;
+            z-index: 100;
+        }
+        #poweredBy span {
+            color: rgba(255,170,0,0.7);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <canvas id="brandingCanvas"></canvas>
+    
+    <!-- Title Banner -->
+    <div id="titleBanner">
+        <div id="gameTitle">BRICKBREAKER3D</div>
+    </div>
+    <div id="subtitleBanner">
+        <div id="gameSubtitle">Manifold Audio Edition</div>
+    </div>
+    
+    <div id="hud">
+        <div id="score"><span class="hud-label">SCORE</span><span class="hud-value">0</span></div>
+        <div id="level"><span class="hud-label">LEVEL</span><span class="hud-value">1</span></div>
+        <div id="bricksLeft"><span class="hud-label">BRICKS</span><span class="hud-value">0</span></div>
+        <div id="energy"><span class="hud-label">SPEED</span><span class="hud-value">0</span></div>
+    </div>
+    
+    <div id="poweredBy">POWERED BY <span>BUTTERFLYFX</span></div>
+    <div id="audioStatus">
+        <div style="font-weight: bold; margin-bottom: 10px;">🔊 Audio Controls</div>
+        <div style="margin-bottom: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="musicToggle" checked style="cursor: pointer; width: 16px; height: 16px;">
+                <span>Music</span>
+            </label>
+        </div>
+        <div style="margin-bottom: 12px; padding-left: 24px;">
+            <input type="range" id="musicVolume" min="0" max="100" value="30" style="width: 120px; cursor: pointer;">
+            <span id="musicVolumeLabel" style="font-size: 11px; margin-left: 8px;">30%</span>
+        </div>
+        <div style="margin-bottom: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="sfxToggle" checked style="cursor: pointer; width: 16px; height: 16px;">
+                <span>Sound FX</span>
+            </label>
+        </div>
+        <div style="padding-left: 24px;">
+            <input type="range" id="sfxVolume" min="0" max="100" value="70" style="width: 120px; cursor: pointer;">
+            <span id="sfxVolumeLabel" style="font-size: 11px; margin-left: 8px;">70%</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        class ManifoldAudioEngine {
+            constructor() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.value = 0.3;
+                this.masterGain.connect(this.audioContext.destination);
+                this.isPlaying = true;
+                this.bpm = 140; // Faster, more energetic tempo
+                this.beatDuration = (60 / this.bpm) * 1000;
+                this.lastEventTime = 0;
+                this.eventDebounce = 50;
+                this.tick = 0;
+                
+                // Base frequency for A4
+                this.A4 = 440;
+                
+                // Retro arcade game chord progression (E minor - energetic and driving)
+                // Em - C - G - D (classic video game progression)
+                this.chordProgression = [
+                    { root: 4, type: 'minor' },   // E minor
+                    { root: 0, type: 'major' },   // C major
+                    { root: 7, type: 'major' },   // G major
+                    { root: 2, type: 'major' }    // D major
+                ];
+                
+                // Catchy 8-bit style melody pattern (in semitones relative to root)
+                // This creates a memorable, looping video game tune
+                this.melodyPatternA = [
+                    { note: 4, dur: 0.5 },   // E
+                    { note: 7, dur: 0.25 },  // G
+                    { note: 9, dur: 0.25 },  // A
+                    { note: 11, dur: 0.5 },  // B
+                    { note: 9, dur: 0.25 },  // A
+                    { note: 7, dur: 0.25 },  // G
+                    { note: 4, dur: 0.5 },   // E
+                    { note: 2, dur: 0.5 }    // D
+                ];
+                
+                this.melodyPatternB = [
+                    { note: 7, dur: 0.5 },   // G
+                    { note: 9, dur: 0.25 },  // A
+                    { note: 11, dur: 0.25 }, // B
+                    { note: 12, dur: 0.5 },  // C (octave)
+                    { note: 11, dur: 0.25 }, // B
+                    { note: 9, dur: 0.25 },  // A
+                    { note: 7, dur: 0.5 },   // G
+                    { note: 4, dur: 0.5 }    // E
+                ];
+                
+                // Driving bass pattern (octave jumps like classic arcade games)
+                this.bassPattern = [
+                    { note: 0, dur: 0.25 },  // Root
+                    { note: 0, dur: 0.25 },  // Root
+                    { note: 12, dur: 0.25 }, // Octave up
+                    { note: 0, dur: 0.25 },  // Root
+                    { note: 7, dur: 0.25 },  // Fifth
+                    { note: 0, dur: 0.25 },  // Root
+                    { note: 12, dur: 0.25 }, // Octave up
+                    { note: 7, dur: 0.25 }   // Fifth
+                ];
+                
+                // Arpeggio pattern for fills
+                this.arpeggioPattern = [0, 4, 7, 12, 7, 4];
+                
+                this.currentChordIdx = 0;
+                this.melodyIdx = 0;
+                this.bassIdx = 0;
+                this.barCount = 0;
+                this.usePatternB = false;
+                
+                // Start the game music
+                this.startBackgroundMusic();
+            }
+            
+            // Convert semitone to frequency
+            noteToFreq(semitone, octave = 4) {
+                // A4 = 440Hz, semitone 9 in octave 4
+                const semitonesFromA4 = (octave - 4) * 12 + (semitone - 9);
+                return this.A4 * Math.pow(2, semitonesFromA4 / 12);
+            }
+            
+            // Play a square wave (classic 8-bit sound)
+            playSquareWave(freq, duration, volume, detune = 0) {
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const env = this.audioContext.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                osc.detune.value = detune;
+                
+                // Sharp attack, slight decay for that retro feel
+                env.gain.setValueAtTime(0, now);
+                env.gain.linearRampToValueAtTime(volume, now + 0.01);
+                env.gain.setValueAtTime(volume * 0.8, now + 0.02);
+                env.gain.linearRampToValueAtTime(0, now + duration);
+                
+                osc.connect(env);
+                env.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+            
+            // Play a triangle wave (softer, good for bass)
+            playTriangleWave(freq, duration, volume) {
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const env = this.audioContext.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                
+                env.gain.setValueAtTime(0, now);
+                env.gain.linearRampToValueAtTime(volume, now + 0.01);
+                env.gain.linearRampToValueAtTime(volume * 0.7, now + duration * 0.5);
+                env.gain.linearRampToValueAtTime(0, now + duration);
+                
+                osc.connect(env);
+                env.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+            
+            // Play noise percussion (hi-hat, snare)
+            playNoise(duration, volume, highpass = 5000) {
+                const now = this.audioContext.currentTime;
+                const bufferSize = this.audioContext.sampleRate * duration;
+                const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                const noise = this.audioContext.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = this.audioContext.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = highpass;
+                
+                const env = this.audioContext.createGain();
+                env.gain.setValueAtTime(volume, now);
+                env.gain.exponentialRampToValueAtTime(0.01, now + duration);
+                
+                noise.connect(filter);
+                filter.connect(env);
+                env.connect(this.masterGain);
+                noise.start(now);
+            }
+            
+            // Play kick drum
+            playKick(volume = 0.5) {
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const env = this.audioContext.createGain();
+                
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.1);
+                
+                env.gain.setValueAtTime(volume, now);
+                env.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                
+                osc.connect(env);
+                env.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            
+            // Play snare
+            playSnare(volume = 0.3) {
+                const now = this.audioContext.currentTime;
+                
+                // Tone component
+                const osc = this.audioContext.createOscillator();
+                const oscEnv = this.audioContext.createGain();
+                osc.frequency.value = 200;
+                oscEnv.gain.setValueAtTime(volume * 0.5, now);
+                oscEnv.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(oscEnv);
+                oscEnv.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                
+                // Noise component
+                this.playNoise(0.15, volume, 2000);
+            }
+            
+            startBackgroundMusic() {
+                const sixteenthNote = this.beatDuration / 4; // 16th note timing
+                
+                const playTick = () => {
+                    if (!this.isPlaying) {
+                        setTimeout(playTick, sixteenthNote);
+                        return;
+                    }
+                    
+                    const tickInBar = this.tick % 32; // 32 sixteenth notes per bar (2 beats = 8 sixteenths, 4 beats = 16, 2 bars = 32)
+                    const tickInBeat = this.tick % 4;
+                    const beatInBar = Math.floor(tickInBar / 4) % 8;
+                    
+                    const chord = this.chordProgression[this.currentChordIdx];
+                    const chordRoot = chord.root;
+                    
+                    // === DRUMS (driving 4-on-the-floor with syncopation) ===
+                    // Kick on beats 1, 3, 5, 7 (every other beat)
+                    if (tickInBar % 8 === 0) {
+                        this.playKick(0.4);
+                    }
+                    
+                    // Snare on beats 3 and 7 (backbeat)
+                    if (tickInBar === 12 || tickInBar === 28) {
+                        this.playSnare(0.35);
+                    }
+                    
+                    // Hi-hat on every 8th note (every 2 ticks)
+                    if (tickInBar % 2 === 0) {
+                        const hihatVol = (tickInBar % 4 === 0) ? 0.15 : 0.08;
+                        this.playNoise(0.05, hihatVol, 8000);
+                    }
+                    
+                    // === BASS LINE (driving, rhythmic) ===
+                    if (tickInBar % 4 === 0) { // Every beat
+                        const bassNote = this.bassPattern[this.bassIdx % this.bassPattern.length];
+                        const bassFreq = this.noteToFreq(chordRoot + bassNote.note, 2);
+                        this.playTriangleWave(bassFreq, bassNote.dur * (this.beatDuration / 1000), 0.35);
+                        this.bassIdx++;
+                    }
+                    
+                    // === MELODY (catchy, memorable pattern) ===
+                    if (tickInBar % 4 === 0) { // Every beat
+                        const pattern = this.usePatternB ? this.melodyPatternB : this.melodyPatternA;
+                        const melodyNote = pattern[this.melodyIdx % pattern.length];
+                        const melodyFreq = this.noteToFreq(melodyNote.note, 5);
+                        
+                        // Add slight detune for thickness
+                        this.playSquareWave(melodyFreq, melodyNote.dur * (this.beatDuration / 1000), 0.2, 5);
+                        this.playSquareWave(melodyFreq, melodyNote.dur * (this.beatDuration / 1000), 0.15, -5);
+                        
+                        this.melodyIdx++;
+                    }
+                    
+                    // === HARMONY/ARPEGGIO (every 2 bars, add sparkle) ===
+                    if (this.barCount % 2 === 1 && tickInBar % 2 === 0) {
+                        const arpIdx = Math.floor(tickInBar / 2) % this.arpeggioPattern.length;
+                        const arpNote = this.arpeggioPattern[arpIdx];
+                        const arpFreq = this.noteToFreq(chordRoot + arpNote, 6);
+                        this.playSquareWave(arpFreq, 0.08, 0.08);
+                    }
+                    
+                    // === PROGRESSION MANAGEMENT ===
+                    this.tick++;
+                    
+                    // Change chord every 2 bars (64 ticks)
+                    if (this.tick % 64 === 0) {
+                        this.currentChordIdx = (this.currentChordIdx + 1) % this.chordProgression.length;
+                        this.barCount++;
+                        
+                        // Switch melody pattern every 4 bars
+                        if (this.barCount % 4 === 0) {
+                            this.usePatternB = !this.usePatternB;
+                            this.melodyIdx = 0;
+                        }
+                        
+                        // Reset bass pattern on chord change
+                        this.bassIdx = 0;
+                    }
+                    
+                    setTimeout(playTick, sixteenthNote);
+                };
+                
+                playTick();
+            }
+            
+            // 8-bit style brick hit sound - ascending pitch based on level
+            playBrickHit(brickSize, level, x, y, z) {
+                if (Date.now() - this.lastEventTime < 30) return;
+                this.lastEventTime = Date.now();
+                
+                // Higher pitch for higher levels (more satisfying progression)
+                const baseNote = 7 + level * 3; // G, A#, C#, E
+                const freq = this.noteToFreq(baseNote, 5);
+                
+                // Quick blip sound
+                this.playSquareWave(freq, 0.08, 0.25);
+                // Add a quick descending sweep for impact
+                this.playSquareWave(freq * 1.5, 0.04, 0.15);
+            }
+            
+            // Satisfying paddle bounce sound
+            playPaddleHit(paddleX, paddleZ) {
+                if (Date.now() - this.lastEventTime < 30) return;
+                this.lastEventTime = Date.now();
+                
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const env = this.audioContext.createGain();
+                
+                // Rising pitch sweep (classic paddle sound)
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                
+                env.gain.setValueAtTime(0.3, now);
+                env.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                
+                osc.connect(env);
+                env.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+            
+            // Wall bounce - quick blip
+            playWallHit(wallType, ballPos) {
+                if (Date.now() - this.lastEventTime < 30) return;
+                this.lastEventTime = Date.now();
+                
+                const now = this.audioContext.currentTime;
+                const osc = this.audioContext.createOscillator();
+                const env = this.audioContext.createGain();
+                
+                // Quick descending blip
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.05);
+                
+                env.gain.setValueAtTime(0.15, now);
+                env.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                
+                osc.connect(env);
+                env.connect(this.masterGain);
+                osc.start(now);
+                osc.stop(now + 0.06);
+            }
+            
+            // Power-up or level complete sound
+            playPowerUp() {
+                const now = this.audioContext.currentTime;
+                const notes = [4, 7, 11, 16]; // E, G, B, E (arpeggio)
+                
+                notes.forEach((note, i) => {
+                    const freq = this.noteToFreq(note, 5);
+                    setTimeout(() => {
+                        this.playSquareWave(freq, 0.15, 0.2);
+                    }, i * 80);
+                });
+            }
+            
+            // Game over sound
+            playGameOver() {
+                const now = this.audioContext.currentTime;
+                const notes = [11, 9, 7, 4, 2]; // Descending
+                
+                notes.forEach((note, i) => {
+                    const freq = this.noteToFreq(note, 4);
+                    setTimeout(() => {
+                        this.playSquareWave(freq, 0.2, 0.25);
+                    }, i * 150);
+                });
+            }
+            
+            toggleMusic() {
+                this.isPlaying = !this.isPlaying;
+                return this.isPlaying;
+            }
+        }
+
+        const gameManifold = { score: 0, level: 1, ballSpeed: 12, ballSpeedMax: 40 };
+        const audioEngine = new ManifoldAudioEngine();
+
+        const canvas = document.getElementById('canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x0a0a1a, 1);
+        renderer.shadowMap.enabled = true;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        rr.toneMappingExposure = 1.2;
+
+        camera.position.set(0, 8, 35);
+        camera.lookAt(0, 0, 0);
+
+        // Starfield with parallax
+        const starsGeometry = new THREE.BufferGeometry();
+        const starCount = 5000;
+        const starPositions = new Float32Array(starCount * 3);
+        const starColors = new Float32Array(starCount * 3);
+        const starSizes = new Float32Array(starCount);
+        const starPhases = new Float32Array(starCount);
+        
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i * 3] = (Math.random() - 0.5) * 2000;
+            starPositions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+            starPositions[i * 3 + 2] = (Math.random() - 0.5) * 2000;
+            
+            const brightness = Math.random();
+            starColors[i * 3] = brightness;
+            starColors[i * 3 + 1] = brightness * 0.9;
+            starColors[i * 3 + 2] = brightness * 0.8;
+            
+            starSizes[i] = Math.random() * 3 + 0.5;
+            starPhases[i] = Math.random() * Math.PI * 2;
+        }
+        
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        starsGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        starsGeometry.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
+        
+        const starsMaterial = new THREE.PointsMaterial({
+            size: 1.0,
+            vertexColors: true,
+            sizeAttenuation: true,
+            fog: false
+        });
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+
+        // Sparks system disabled for clean gameplay
+
+        const ambientLight = new THREE.AmbientLight(0x4488ff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        directionalLight.position.set(15, 25, 15);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        const pointLight1 = new THREE.PointLight(0x00ffff, 0.8, 50);
+        pointLight1.position.set(10, 5, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0xff00ff, 0.6, 50);
+        pointLight2.position.set(-10, 5, -10);
+        scene.add(pointLight2);
+
+        const gameState = { score: 0, level: 1, ballLaunched: false, bricksRemaining: 0, paddleScale: 1.0 };
+        const brickWidth = 2.0, brickHeight = 1.0, brickDepth = 2.0;
+        const arenaSize = brickWidth * 12;
+        const arenaGroup = new THREE.Group();
+        scene.add(arenaGroup);
+
+        const glassGeometry = new THREE.BoxGeometry(arenaSize, arenaSize, arenaSize);
+        const glassMaterial = new THREE.MeshStandardMaterial({ metalness: 0.6, roughness: 0.2, transparent: true, opacity: 0.25, side: THREE.BackSide });
+        const arenaWalls = new THREE.Mesh(glassGeometry, glassMaterial);
+        arenaGroup.add(arenaWalls);
+
+        const edgeGeometry = new THREE.EdgesGeometry(glassGeometry);
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x00ffcc, linewidth: 3 });
+        const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        arenaGroup.add(edges);
+
+        const floorGeometry = new THREE.PlaneGeometry(arenaSize - 0.5, arenaSize - 0.5);
+        const floorMaterial = new THREE.MeshStandardMaterial({ metalness: 0.3, roughness: 0.7, transparent: true, opacity: 0.9 });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -arenaSize / 2 + 0.02;
+        arenaGroup.add(floor);
+
+        const paddleGroup = new THREE.Group();
+        arenaGroup.add(paddleGroup);
+
+        const scale = 1.3;
+        const paddleRadius = 1.8 * scale;
+        const paddleThickness = 0.15 * scale;
+        const handleLength = 2.0 * scale;
+        const handleRadius = 0.25 * scale;
+        
+        // Create ping pong paddle group - Breakout style
+        // Paddle head (flat circular surface) - horizontal, facing upward to catch falling ball
+        const paddleHeadGeometry = new THREE.CylinderGeometry(paddleRadius, paddleRadius, paddleThickness, 64);
+        const paddleMaterial = new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.8, roughness: 0.1, emissive: 0xff1111, emissiveIntensity: 0.3 });
+        const paddleHead = new THREE.Mesh(paddleHeadGeometry, paddleMaterial);
+        paddleHead.castShadow = true;
+        paddleHead.position.y = 0;
+        paddleGroup.add(paddleHead);
+
+        let paddlePos = new THREE.Vector3(0, 0.2, -arenaSize / 2 + 0.5);
+
+        const ballGeometry = new THREE.SphereGeometry(0.5, 64, 64);
+        const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.95, roughness: 0.05, emissive: 0xffffff, emissiveIntensity: 0.2 });
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.castShadow = true;
+        arenaGroup.add(ball);
+
+        // Ball shadow
+        const shadowGeometry = new THREE.CircleGeometry(0.6, 32);
+        const shadowMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5, fog: false });
+        const ballShadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
+        ballShadow.rotation.x = -Math.PI / 2;
+        ballShadow.position.y = -arenaSize / 2 + 0.03;
+        arenaGroup.add(ballShadow);
+
+        // Paddle shadow
+        const paddleShadowGeometry = new THREE.CircleGeometry(paddleRadius * 0.8, 32);
+        const paddleShadowMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, fog: false });
+        const paddleShadow = new THREE.Mesh(paddleShadowGeometry, paddleShadowMaterial);
+        paddleShadow.rotation.x = -Math.PI / 2;
+        paddleShadow.position.y = -arenaSize / 2 + 0.03;
+        arenaGroup.add(paddleShadow);
+
+        // Wall reflections for ball and shadow
+        const reflectionsGroup = new THREE.Group();
+        arenaGroup.add(reflectionsGroup);
+
+        const brickGroup = new THREE.Group();
+        arenaGroup.add(brickGroup);
+        const bricks = [];
+
+        function createBricks() {
+            brickGroup.clear();
+            bricks.length = 0;
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+            const scaleFactor = 1 / goldenRatio;
+            const colors = [0xff0000, 0xff8800, 0xffff00, 0x00ff00, 0x0088ff, 0x8800ff];
+            
+            // Base brick dimensions at level 0
+            const baseBrickWidth = 2.0;
+            const baseBrickHeight = 1.0;
+            const baseBrickDepth = 2.0;
+            
+            // Fixed footprint: 12x12 units (arenaSize x arenaSize)
+            const footprintX = arenaSize;
+            const footprintZ = arenaSize;
+            
+            const startY = arenaSize / 2 - (baseBrickHeight * 3);
+            const lowestBrickY = startY - (5 - 1) * baseBrickHeight;
+            window.ballStartY = lowestBrickY - baseBrickHeight - 1;
+            
+            // Create perfect lattice using z=xy manifold principle
+            // Perfect grid structure with exact brick counts:
+            // Level 0 (top): 12x12 = 144 bricks
+            // Level 1: 12x6 = 72 bricks (144/2)
+            // Level 2: 12x4 = 48 bricks (144/3)
+            // Level 3: 9x4 = 36 bricks (144/4)
+            const gridConfigs = [
+                { gridX: 12, gridZ: 12 },  // Level 0: 12x12 = 144 bricks (top)
+                { gridX: 12, gridZ: 6 },   // Level 1: 12x6 = 72 bricks
+                { gridX: 12, gridZ: 4 },   // Level 2: 12x4 = 48 bricks
+                { gridX: 9, gridZ: 4 }     // Level 3: 9x4 = 36 bricks (bottom)
+            ];
+            
+            for (let level = 0; level < 4; level++) {
+                const config = gridConfigs[level];
+                const gridX = config.gridX;
+                const gridZ = config.gridZ;
+                
+                // Calculate brick size to fit perfectly in 12x12 footprint
+                const scaledWidth = footprintX / gridX;
+                const scaledDepth = footprintZ / gridZ;
+                
+                // Perfect centering: start from -6, -6 (half of 12x12)
+                const startX = -footprintX / 2;
+                const startZ = -footprintZ / 2;
+                
+                // Score multiplier: bricks worth more as you go up (smaller, harder to hit)
+                const scoreMultiplier = level + 1;
+                
+                // Create bricks in perfect lattice formation
+                for (let x = 0; x < gridX; x++) {
+                    for (let z = 0; z < gridZ; z++) {
+                        // Perfect alignment: each brick position is exact multiple of scaled dimensions
+                        const brickX = startX + (x + 0.5) * scaledWidth;
+                        const brickZ = startZ + (z + 0.5) * scaledDepth;
+                        const brickY = startY - level * baseBrickHeight;
+                        
+                        // z=xy manifold coordinate (dimensional substrate)
+                        const manifoldZ = brickX * brickZ;
+                        
+                        const brickGeo = new THREE.BoxGeometry(scaledWidth, baseBrickHeight, scaledDepth);
+                        const brickMat = new THREE.MeshStandardMaterial({ color: colors[level % colors.length], metalness: 0.95, roughness: 0.02, emissive: colors[level % colors.length], emissiveIntensity: 0.3 });
+                        const brick = new THREE.Mesh(brickGeo, brickMat);
+                        brick.position.set(brickX, brickY, brickZ);
+                        brick.castShadow = true;
+                        brickGroup.add(brick);
+                        bricks.push({ mesh: brick, pos: brick.position.clone(), size: new THREE.Vector3(scaledWidth, baseBrickHeight, scaledDepth), active: true, level: level, scoreValue: Math.round(scoreMultiplier), manifoldZ: manifoldZ });
+                    }
+                }
+            }
+            gameState.bricksRemaining = bricks.length;
+        }
+
+        createBricks();
+        
+        let ballPos = new THREE.Vector3(0, window.ballStartY, 0);
+        let ballVel = new THREE.Vector3(0, 0, 0);
+        const ballRadius = (0.5 + 0.15) * 1.5;
+
+        let mouseX = 0, mouseY = 0, arenaRotation = { x: 0, y: 0 }, wheelPressed = false;
+        let targetPaddleX = 0, targetPaddleZ = 0;
+        const paddleSpeed = 0.15; // Smooth interpolation factor (0-1, lower = smoother)
+        const keyboardInput = { left: false, right: false, up: false, down: false };
+        const keyboardSpeed = 0.3; // Units per frame for keyboard control
+        
+        // Pointer lock for paddle control
+        let pointerLocked = false;
+        let gamePaused = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        const mouseSensitivity = 0.05; // How fast paddle moves with mouse
+
+        // Request pointer lock when clicking on canvas
+        canvas.addEventListener('click', (e) => {
+            if (!pointerLocked && e.button === 0) {
+                canvas.requestPointerLock();
+                gamePaused = false;
+            }
+        });
+        
+        // Handle pointer lock change
+        document.addEventListener('pointerlockchange', () => {
+            pointerLocked = document.pointerLockElement === canvas;
+            if (pointerLocked) {
+                document.body.style.cursor = 'none';
+                gamePaused = false;
+            } else {
+                document.body.style.cursor = 'default';
+                gamePaused = true;
+            }
+        });
+        
+        // Prevent right-click context menu
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (wheelPressed) {
+                arenaRotation.y += (e.clientX - lastMouseX) * 0.01;
+                arenaRotation.x += (e.clientY - lastMouseY) * 0.01;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+            
+            // When pointer is locked, use movement delta to control paddle
+            if (pointerLocked) {
+                const maxBoundary = arenaSize / 2 - paddleRadius;
+                
+                // Use movementX and movementY for relative mouse movement
+                targetPaddleX += e.movementX * mouseSensitivity;
+                targetPaddleZ += e.movementY * mouseSensitivity;
+                
+                // Clamp to boundaries
+                targetPaddleX = Math.max(-maxBoundary, Math.min(maxBoundary, targetPaddleX));
+                targetPaddleZ = Math.max(-maxBoundary, Math.min(maxBoundary, targetPaddleZ));
+            }
+            
+            mouseX = e.clientX;
+endere            mouseY = e.clientY;
+        });
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'arrowleft' || key === 'a') { keyboardInput.left = true; e.preventDefault(); }
+            if (key === 'arrowright' || key === 'd') { keyboardInput.right = true; e.preventDefault(); }
+            if (key === 'arrowup' || key === 'w') { keyboardInput.up = true; e.preventDefault(); }
+            if (key === 'arrowdown' || key === 's') { keyboardInput.down = true; e.preventDefault(); }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'arrowleft' || key === 'a') { keyboardInput.left = false; }
+            if (key === 'arrowright' || key === 'd') { keyboardInput.right = false; }
+            if (key === 'arrowup' || key === 'w') { keyboardInput.up = false; }
+            if (key === 'arrowdown' || key === 's') { keyboardInput.down = false; }
+        });
+
+        window.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                // Left click - serve ball
+                e.preventDefault();
+                if (!gameState.ballLaunched) {
+                    gameState.ballLaunched = true;
+                    const angle = Math.random() * Math.PI * 2;
+                    ballVel.set(Math.cos(angle) * 10, -10, Math.sin(angle) * 10);
+                }
+            }
+            if (e.button === 1) { wheelPressed = true; lastMouseX = mouseX; lastMouseY = mouseY; }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (e.button === 1) wheelPressed = false;
+        });
+
+        window.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 2;
+            const direction = e.deltaY > 0 ? 1 : -1;
+            const currentDist = camera.position.length();
+            const newDist = Math.max(15, Math.min(80, currentDist + direction * zoomSpeed));
+            const ratio = newDist / currentDist;
+            camera.position.multiplyScalar(ratio);
+        }, { passive: false });
+
+        // Audio control listeners
+        const musicToggle = document.getElementById('musicToggle');
+        const musicVolume = document.getElementById('musicVolume');
+        const musicVolumeLabel = document.getElementById('musicVolumeLabel');
+        const sfxToggle = document.getElementById('sfxToggle');
+        const sfxVolume = document.getElementById('sfxVolume');
+        const sfxVolumeLabel = document.getElementById('sfxVolumeLabel');
+        
+        // Audio state
+        const audioState = {
+            musicEnabled: true,
+            musicVolume: 0.3,
+            sfxEnabled: true,
+            sfxVolume: 0.7
+        };
+        
+        // Set initial volume to 30%
+        audioEngine.masterGain.gain.value = 0.3 * 0.25;
+        
+        musicToggle.addEventListener('change', (e) => {
+            audioState.musicEnabled = e.target.checked;
+            audioEngine.isPlaying = audioState.musicEnabled;
+        });
+        
+        musicVolume.addEventListener('input', (e) => {
+            audioState.musicVolume = e.target.value / 100;
+            musicVolumeLabel.textContent = e.target.value + '%';
+            audioEngine.masterGain.gain.value = audioState.musicVolume * 0.25;
+        });
+        
+        sfxToggle.addEventListener('change', (e) => {
+            audioState.sfxEnabled = e.target.checked;
+            audioEngine.sfxEnabled = audioState.sfxEnabled;
+        });
+        
+        sfxVolume.addEventListener('input', (e) => {
+            audioState.sfxVolume = e.target.value / 100;
+            sfxVolumeLabel.textContent = e.target.value + '%';
+            audioEngine.sfxVolume = audioState.sfxVolume;
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (!gameState.ballLaunched) {
+                    gameState.ballLaunched = true;
+                    const angle = Math.random() * Math.PI * 2;
+                    ballVel.set(Math.cos(angle) * 10, -10, Math.sin(angle) * 10);
+                }
+            }
+            if (e.key.toLowerCase() === 'r') {
+                gameState.ballLaunched = false;
+                gameState.score = 0;
+                const startY = arenaSize / 2 - (brickHeight * 3);
+                const lowestBrickY = startY - (5 - 1) * brickHeight;
+                ballPos.set(0, lowestBrickY - brickHeight - 1, 0);
+                ballVel.set(0, 0, 0);
+                createBricks();
+            }
+            if (e.key.toLowerCase() === 'm') {
+                musicToggle.checked = !musicToggle.checked;
+                audioState.musicEnabled = musicToggle.checked;
+                audioEngine.isPlaying = audioState.musicEnabled;
+            }
+        });
+
+        function updateHUD() {
+            document.getElementById('score').innerHTML = `<span class="hud-label">SCORE</span><span class="hud-value">${gameState.score}</span>`;
+            document.getElementById('level').innerHTML = `<span class="hud-label">LEVEL</span><span class="hud-value">${gameState.level}</span>`;
+            document.getElementById('bricksLeft').innerHTML = `<span class="hud-label">BRICKS</span><span class="hud-value">${gameState.bricksRemaining}</span>`;
+            document.getElementById('energy').innerHTML = `<span class="hud-label">SPEED</span><span class="hud-value">${ballVel.length().toFixed(1)}</span>`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update starfield parallax
+            const time = Date.now() * 0.0001;
+            const sizeAttribute = starsGeometry.getAttribute('size');
+            const colorAttribute = starsGeometry.getAttribute('color');
+            
+            for (let i = 0; i < starCount; i++) {
+                const twinkle = Math.sin(time * 2 + starPhases[i]) * 0.5 + 0.5;
+                const sparkle = Math.sin(time * 4 + starPhases[i]) * 0.3 + 0.7;
+                sizeAttribute.array[i] = starSizes[i] * sparkle;
+                const brightness = twinkle * sparkle;
+                colorAttribute.array[i * 3] = brightness;
+                colorAttribute.array[i * 3 + 1] = brightness * 0.9;
+                colorAttribute.array[i * 3 + 2] = brightness * 0.8;
+            }
+            sizeAttribute.needsUpdate = true;
+            colorAttribute.needsUpdate = true;
+
+            // Update paddle scale based on level
+            // Paddle grows 0.3x when reaching top level (level 0), shrinks when leaving
+            const targetScale = (gameState.bricksRemaining > 0 && bricks.some(b => b.active && b.level === 0)) ? 1.3 : 1.0;
+            gameState.paddleScale += (targetScale - gameState.paddleScale) * 0.1; // Smooth transition
+            paddleGroup.scale.set(gameState.paddleScale, gameState.paddleScale, gameState.paddleScale);
+            
+            // Update paddle position with smooth interpolation and keyboard input
+            // Paddle restricted to close to floor
+            const maxBoundaryXZ = arenaSize / 2 - (paddleRadius * gameState.paddleScale);
+            const paddleFloorY = -arenaSize / 2 + 0.2; // Close to floor with slight gap
+            
+            // Apply keyboard input to target position
+            if (keyboardInput.left) targetPaddleX -= keyboardSpeed;
+            if (keyboardInput.right) targetPaddleX += keyboardSpeed;
+            if (keyboardInput.up) targetPaddleZ -= keyboardSpeed;
+            if (keyboardInput.down) targetPaddleZ += keyboardSpeed;
+            
+            // Clamp to boundaries: X and Z free movement, Y fixed to floor
+            targetPaddleX = Math.max(-maxBoundaryXZ, Math.min(maxBoundaryXZ, targetPaddleX));
+            targetPaddleZ = Math.max(-maxBoundaryXZ, Math.min(maxBoundaryXZ, targetPaddleZ));
+            
+            // Smooth interpolation from current position to target
+            paddlePos.x += (targetPaddleX - paddlePos.x) * paddleSpeed;
+            paddlePos.z += (targetPaddleZ - paddlePos.z) * paddleSpeed;
+            paddlePos.y = paddleFloorY; // Keep paddle close to floor
+
+            if (gameState.ballLaunched) {
+                ballPos.add(ballVel.clone().multiplyScalar(1/60));
+                
+                // Wall collisions
+                const wallBounce = 0.95;
+                if (ballPos.x > arenaSize / 2 - ballRadius) {
+                    ballVel.x = -Math.abs(ballVel.x) * wallBounce;
+                    ballPos.x = arenaSize / 2 - ballRadius;
+                    audioEngine.playWallHit('right', ballPos);
+                } else if (ballPos.x < -arenaSize / 2 + ballRadius) {
+                    ballVel.x = Math.abs(ballVel.x) * wallBounce;
+                    ballPos.x = -arenaSize / 2 + ballRadius;
+                    audioEngine.playWallHit('left', ballPos);
+                }
+                
+                if (ballPos.z > arenaSize / 2 - ballRadius) {
+                    ballVel.z = -Math.abs(ballVel.z) * wallBounce;
+                    ballPos.z = arenaSize / 2 - ballRadius;
+                    audioEngine.playWallHit('front', ballPos);
+                } else if (ballPos.z < -arenaSize / 2 + ballRadius) {
+                    ballVel.z = Math.abs(ballVel.z) * wallBounce;
+                    ballPos.z = -arenaSize / 2 + ballRadius;
+                    audioEngine.playWallHit('back', ballPos);
+                }
+                
+                if (ballPos.y > arenaSize / 2 - ballRadius) {
+                    ballVel.y = -Math.abs(ballVel.y) * wallBounce;
+                    ballPos.y = arenaSize / 2 - ballRadius;
+                    audioEngine.playWallHit('ceiling', ballPos);
+                }
+                
+                if (ballPos.y < -arenaSize / 2 - 5) {
+                    gameState.ballLaunched = false;
+                    ballPos.set(0, window.ballStartY, 0);
+                    ballVel.set(0, 0, 0);
+                }
+                
+                // Paddle collision - always sends ball upward based on angle
+                const paddleDistXZ = Math.sqrt(
+                    Math.pow(ballPos.x - paddlePos.x, 2) + 
+                    Math.pow(ballPos.z - paddlePos.z, 2)
+                );
+                const paddleTopY = paddlePos.y + paddleThickness / 2;
+                
+                if (paddleDistXZ < paddleRadius + ballRadius && 
+                    ballPos.y < paddleTopY + ballRadius && 
+                    ballPos.y > paddlePos.y - paddleThickness / 2 - ballRadius &&
+                    ballVel.y < 0) {
+                    
+                    // Calculate hit position relative to paddle center
+                    const hitX = ballPos.x - paddlePos.x;
+                    const hitZ = ballPos.z - paddlePos.z;
+                    const hitDistXZ = Math.sqrt(hitX * hitX + hitZ * hitZ);
+                    
+                    // Normalize hit direction for angle calculation
+                    const hitDirX = hitX / (hitDistXZ + 0.001);
+                    const hitDirZ = hitZ / (hitDistXZ + 0.001);
+                    
+                    // Calculate bounce speed (preserve horizontal momentum)
+                    const horizontalSpeed = Math.sqrt(ballVel.x * ballVel.x + ballVel.z * ballVel.z);
+                    const upwardSpeed = Math.abs(ballVel.y) * 1.2;
+                    
+                    // Set velocity: always upward with angle based on hit position
+                    ballVel.x = hitDirX * horizontalSpeed * 0.8;
+                    ballVel.y = upwardSpeed;
+                    ballVel.z = hitDirZ * horizontalSpeed * 0.8;
+                    
+                    // Position ball above paddle
+                    ballPos.y = paddleTopY + ballRadius;
+                    
+                    audioEngine.playPaddleHit(ballPos.x, ballPos.z);
+                }
+                
+                // Brick collisions
+                for (let brick of bricks) {
+                    if (!brick.active) continue;
+                    
+                    const brickMin = brick.pos.clone().sub(brick.size.clone().multiplyScalar(0.5));
+                    const brickMax = brick.pos.clone().add(brick.size.clone().multiplyScalar(0.5));
+                    
+                    const closestPoint = new THREE.Vector3(
+                        Math.max(brickMin.x, Math.min(ballPos.x, brickMax.x)),
+                        Math.max(brickMin.y, Math.min(ballPos.y, brickMax.y)),
+                        Math.max(brickMin.z, Math.min(ballPos.z, brickMax.z))
+                    );
+                    
+                    const dist = ballPos.distanceTo(closestPoint);
+                    
+                    if (dist < ballRadius) {
+                        brick.active = false;
+                        brick.mesh.visible = false;
+                        gameState.score += 1;
+                        gameState.bricksRemaining--;
+                        audioEngine.playBrickHit(1.5, brick.level, brick.pos.x, brick.pos.y, brick.pos.z);
+                        
+                        // Calculate bounce direction
+                        const normal = ballPos.clone().sub(closestPoint).normalize();
+                        const dotProduct = ballVel.dot(normal);
+                        ballVel.sub(normal.clone().multiplyScalar(2 * dotProduct)).multiplyScalar(0.95);
+                        
+                        // Graduated speed increase per layer
+                        // Level 0 (bottom): base speed ~8-10
+                        // Level 1: ~12-14
+                        // Level 2: ~16-18
+                        // Level 3 (top): ~20-22
+                        const speedCeilings = [10, 14, 18, 22]; // Speed ceiling for each level
+                        const speedCeiling = speedCeilings[Math.min(brick.level, 3)];
+                        const currentSpeed = ballVel.length();
+                        
+                        // Gradually accelerate towards the level's speed ceiling
+                        if (currentSpeed < speedCeiling) {
+                            // Smooth acceleration: 5% boost per hit towards ceiling
+                            const speedBoost = 1.05;
+                            ballVel.multiplyScalar(speedBoost);
+                            
+                            // Clamp to this level's ceiling
+                            if (ballVel.length() > speedCeiling) {
+                                ballVel.normalize().multiplyScalar(speedCeiling);
+                            }
+                        }
+                        
+                        // Push ball away from brick to prevent sticking
+                        ballPos.add(normal.clone().multiplyScalar(ballRadius + 0.2));
+                    }
+                }
+            }
+
+            paddleGroup.position.copy(paddlePos);
+
+            ball.position.copy(ballPos);
+            
+            // Update ball shadow
+            ballShadow.position.x = ballPos.x;
+            ballShadow.position.z = ballPos.z;
+            const ballHeightAboveFloor = ballPos.y - (-arenaSize / 2);
+            const ballShadowScale = 1 + (1 - (ballHeightAboveFloor / arenaSize)) * 0.3;
+            ballShadow.scale.set(ballShadowScale, ballShadowScale, 1);
+            ballShadow.material.opacity = 0.5 * (1 - (ballHeightAboveFloor / arenaSize) * 0.3);
+            
+            // Update paddle shadow
+            paddleShadow.position.x = paddlePos.x;
+            paddleShadow.position.z = paddlePos.z;
+            paddleShadow.material.opacity = 0.3;
+            
+            // Update wall reflections
+            reflectionsGroup.clear();
+            const reflectionThreshold = 3;
+            const reflectionOffset = 0.3;
+            
+            // Ball reflections on walls
+            if (gameState.ballLaunched) {
+                if (ballPos.x > arenaSize / 2 - reflectionThreshold) {
+                    const reflectionGeo = new THREE.SphereGeometry(0.5, 32, 32);
+                    const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.7, roughness: 0.2, emissive: 0x88ccff, emissiveIntensity: 0.2, transparent: true, opacity: 0.4 });
+                    const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                    reflection.position.set(arenaSize / 2 + reflectionOffset, ballPos.y, ballPos.z);
+                    const distToWall = Math.abs(ballPos.x - (arenaSize / 2));
+                    reflection.material.opacity = 0.4 * (1 - distToWall / reflectionThreshold);
+                    reflectionsGroup.add(reflection);
+                }
+                if (ballPos.x < -arenaSize / 2 + reflectionThreshold) {
+                    const reflectionGeo = new THREE.SphereGeometry(0.5, 32, 32);
+                    const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.7, roughness: 0.2, emissive: 0x88ccff, emissiveIntensity: 0.2, transparent: true, opacity: 0.4 });
+                    const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                    reflection.position.set(-arenaSize / 2 - reflectionOffset, ballPos.y, ballPos.z);
+                    const distToWall = Math.abs(ballPos.x - (-arenaSize / 2));
+                    reflection.material.opacity = 0.4 * (1 - distToWall / reflectionThreshold);
+                    reflectionsGroup.add(reflection);
+                }
+                if (ballPos.z > arenaSize / 2 - reflectionThreshold) {
+                    const reflectionGeo = new THREE.SphereGeometry(0.5, 32, 32);
+                    const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.7, roughness: 0.2, emissive: 0x88ccff, emissiveIntensity: 0.2, transparent: true, opacity: 0.4 });
+                    const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                    reflection.position.set(ballPos.x, ballPos.y, arenaSize / 2 + reflectionOffset);
+                    const distToWall = Math.abs(ballPos.z - (arenaSize / 2));
+                    reflection.material.opacity = 0.4 * (1 - distToWall / reflectionThreshold);
+                    reflectionsGroup.add(reflection);
+                }
+                if (ballPos.z < -arenaSize / 2 + reflectionThreshold) {
+                    const reflectionGeo = new THREE.SphereGeometry(0.5, 32, 32);
+                    const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.7, roughness: 0.2, emissive: 0x88ccff, emissiveIntensity: 0.2, transparent: true, opacity: 0.4 });
+                    const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                    reflection.position.set(ballPos.x, ballPos.y, -arenaSize / 2 - reflectionOffset);
+                    const distToWall = Math.abs(ballPos.z - (-arenaSize / 2));
+                    reflection.material.opacity = 0.4 * (1 - distToWall / reflectionThreshold);
+                    reflectionsGroup.add(reflection);
+                }
+            }
+            
+            // Paddle reflections on walls
+            if (paddlePos.x > arenaSize / 2 - reflectionThreshold) {
+                const reflectionGeo = new THREE.CylinderGeometry(paddleRadius * 0.6, paddleRadius * 0.6, paddleThickness, 32);
+                const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.5, roughness: 0.3, emissive: 0xff1111, emissiveIntensity: 0.1, transparent: true, opacity: 0.3 });
+                const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                reflection.position.set(arenaSize / 2 + reflectionOffset, paddlePos.y, paddlePos.z);
+                const distToWall = Math.abs(paddlePos.x - (arenaSize / 2));
+                reflection.material.opacity = 0.3 * (1 - distToWall / reflectionThreshold);
+                reflectionsGroup.add(reflection);
+            }
+            if (paddlePos.x < -arenaSize / 2 + reflectionThreshold) {
+                const reflectionGeo = new THREE.CylinderGeometry(paddleRadius * 0.6, paddleRadius * 0.6, paddleThickness, 32);
+                const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.5, roughness: 0.3, emissive: 0xff1111, emissiveIntensity: 0.1, transparent: true, opacity: 0.3 });
+                const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                reflection.position.set(-arenaSize / 2 - reflectionOffset, paddlePos.y, paddlePos.z);
+                const distToWall = Math.abs(paddlePos.x - (-arenaSize / 2));
+                reflection.material.opacity = 0.3 * (1 - distToWall / reflectionThreshold);
+                reflectionsGroup.add(reflection);
+            }
+            if (paddlePos.z > arenaSize / 2 - reflectionThreshold) {
+                const reflectionGeo = new THREE.CylinderGeometry(paddleRadius * 0.6, paddleRadius * 0.6, paddleThickness, 32);
+                const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.5, roughness: 0.3, emissive: 0xff1111, emissiveIntensity: 0.1, transparent: true, opacity: 0.3 });
+                const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                reflection.position.set(paddlePos.x, paddlePos.y, arenaSize / 2 + reflectionOffset);
+                const distToWall = Math.abs(paddlePos.z - (arenaSize / 2));
+                reflection.material.opacity = 0.3 * (1 - distToWall / reflectionThreshold);
+                reflectionsGroup.add(reflection);
+            }
+            if (paddlePos.z < -arenaSize / 2 + reflectionThreshold) {
+                const reflectionGeo = new THREE.CylinderGeometry(paddleRadius * 0.6, paddleRadius * 0.6, paddleThickness, 32);
+                const reflectionMat = new THREE.MeshStandardMaterial({ color: 0xff3333, metalness: 0.5, roughness: 0.3, emissive: 0xff1111, emissiveIntensity: 0.1, transparent: true, opacity: 0.3 });
+                const reflection = new THREE.Mesh(reflectionGeo, reflectionMat);
+                reflection.position.set(paddlePos.x, paddlePos.y, -arenaSize / 2 - reflectionOffset);
+                const distToWall = Math.abs(paddlePos.z - (-arenaSize / 2));
+                reflection.material.opacity = 0.3 * (1 - distToWall / reflectionThreshold);
+                reflectionsGroup.add(reflection);
+            }
+            
+            arenaGroup.rotation.x = arenaRotation.x;
+            arenaGroup.rotation.y = arenaRotation.y;
+
+            updateHUD();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+
+        // 3D Logo Container with text
+        const logoContainer = document.createElement('div');
+        logoContainer.id = 'logoContainer';
+        logoContainer.style.display = 'flex';
+        logoContainer.style.alignItems = 'center';
+        logoContainer.style.gap = '15px';
+        logoContainer.style.padding = '10px';
+        document.body.appendChild(logoContainer);
+
+        // 3D Canvas (half size: 150x150)
+        const logoScene = new THREE.Scene();
+        const logoCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        const logoRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        logoRenderer.setSize(150, 150);
+        logoRenderer.setClearColor(0x000000, 0);
+        logoContainer.appendChild(logoRenderer.domElement);
+        logoCamera.position.z = 3;
+
+        const logoBrickGroup = new THREE.Group();
+        logoScene.add(logoBrickGroup);
+        const logoBrickColors = [0xff0000, 0xff8800, 0xffff00, 0x00ff00, 0x0088ff, 0x8800ff];
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const brickGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const brickMat = new THREE.MeshStandardMaterial({ color: logoBrickColors[(i + j) % logoBrickColors.length], metalness: 0.8, roughness: 0.2, emissive: logoBrickColors[(i + j) % logoBrickColors.length], emissiveIntensity: 0.3 });
+                const brick = new THREE.Mesh(brickGeo, brickMat);
+                brick.position.set((i - 1) * 0.6, (j - 1) * 0.6, 0);
+                brick.userData.originalPos = brick.position.clone();
+                brick.userData.time = Math.random() * Math.PI * 2;
+                logoBrickGroup.add(brick);
+            }
+        }
+
+        const logoBallGeo = new THREE.SphereGeometry(0.25, 32, 32);
+        const logoBallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.95, roughness: 0.05, emissive: 0xffffff, emissiveIntensity: 0.5 });
+        const logoBall = new THREE.Mesh(logoBallGeo, logoBallMat);
+        logoBall.position.set(0, 1.2, 0);
+        logoBall.userData.time = 0;
+        logoScene.add(logoBall);
+
+        const logoAmbient = new THREE.AmbientLight(0xffffff, 0.6);
+        logoScene.add(logoAmbient);
+        const logoPoint = new THREE.PointLight(0x00ffff, 1, 10);
+        logoPoint.position.set(2, 2, 2);
+        logoScene.add(logoPoint);
+
+        
+        function animateLogo() {
+            requestAnimationFrame(animateLogo);
+            logoBrickGroup.children.forEach(brick => {
+                brick.userData.time += 0.02;
+                brick.rotation.x += 0.01;
+                brick.rotation.y += 0.015;
+                brick.position.y = brick.userData.originalPos.y + Math.sin(brick.userData.time) * 0.2;
+            });
+            logoBall.userData.time += 0.03;
+            logoBall.position.x = Math.sin(logoBall.userData.time) * 1.5;
+            logoBall.position.z = Math.cos(logoBall.userData.time) * 0.5;
+            logoBall.rotation.x += 0.02;
+            logoBall.rotation.y += 0.03;
+            logoRenderer.render(logoScene, logoCamera);
+        }
+        animateLogo();
+
+        // Controls Panel
+        const controlsPanel = document.createElement('div');
+        controlsPanel.id = 'controlsPanel';
+        controlsPanel.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 10px; color: #00ffcc;">⌨️ CONTROLS</div>
+            <div class="control-item"><span class="key">CLICK</span> Lock cursor & play</div>
+            <div class="control-item"><span class="key">RIGHT-CLICK</span> Release cursor</div>
+            <div class="control-item"><span class="key">ESC</span> Release cursor</div>
+            <div class="control-item"><span class="key">SPACE</span> Launch ball</div>
+            <div class="control-item"><span class="key">WASD</span> Move paddle</div>
+            <div class="control-item"><span class="key">R</span> Reset game</div>
+            <div class="control-item"><span class="key">M</span> Toggle music</div>
+        `;
+        document.body.appendChild(controlsPanel);
+    </script>
+</body>
+</html>
