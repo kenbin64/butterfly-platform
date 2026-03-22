@@ -1,8 +1,9 @@
 # Schwarz Diamond — VPS Deployment Guide
 
 > **For: VPS AI / automated deploy agents**
-> **Architecture:** Single-file Node.js artifact (no Docker, no build tools on server)
+> **Architecture:** Single-file Node.js artifact (no Docker, no build tools needed on server)
 > **Principle:** `z = xy` — everything collapses to one point.
+> **Source:** https://github.com/kenbin64/butterfly-platform.git
 
 ---
 
@@ -10,164 +11,136 @@
 
 | Property | Value |
 |---|---|
-| **VPS IP** | `100.70.142.122` |
+| **VPS IP** | `172.81.62.217` (Tailscale: `100.70.142.122`) |
 | **SSH User** | `butterfly` |
-| **SSH Port** | `22` |
-| **Remote Path** | `/opt/schwarz-diamond/` |
-| **Artifact** | `schwarz-diamond.point.js` |
-| **Node Port** | `3000` |
-| **Domain** | `kensgames.com` (when DNS is configured) |
-| **OS** | Ubuntu LTS |
+| **Domain** | `kensgames.com` |
+| **Repo** | `https://github.com/kenbin64/butterfly-platform.git` |
+| **Artifact** | `schwarz-diamond.point.js` (~14MB) |
+| **App Dir** | `/var/www/kensgames/` |
+| **Node Port** | `3000` (proxied by nginx) |
+| **Service** | `kensgames` (systemd) |
+| **OS** | Ubuntu 24.04 LTS |
 
 ---
 
-## Prerequisites (VPS)
+## First-Time Setup (from scratch)
 
 ```bash
-# Node.js must be installed on the VPS
-node --version   # must be v18+ (LTS)
-# If missing:
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
+# 1. Clone the repo
+git clone https://github.com/kenbin64/butterfly-platform.git /opt/butterfly-platform
+cd /opt/butterfly-platform
+
+# 2. Build the artifact
+node width/engine/deploy/build.js
+
+# 3. Run the provisioning script (does EVERYTHING)
+sudo bash width/engine/deploy/provision-kensgames.sh
 ```
 
-No other dependencies. No npm install, no Docker, no Python. The artifact is fully self-contained.
+The provisioning script handles:
+- ✅ Node.js 20.x installation
+- ✅ nginx installation & reverse proxy config
+- ✅ certbot installation & SSL certificate
+- ✅ Artifact deployment to `/var/www/kensgames/`
+- ✅ systemd service creation (auto-restart on crash/reboot)
+- ✅ HTTP → HTTPS redirect
+
+**That's it.** After this, `https://kensgames.com` is live.
 
 ---
 
-## Step 1: Build the Artifact (on dev machine)
+## Subsequent Deploys (update to latest)
 
 ```bash
-cd /path/to/butterfly_platform
+cd /opt/butterfly-platform
+git pull origin main
+node width/engine/deploy/build.js
+sudo cp width/engine/deploy/artifacts/schwarz-diamond.point.js /var/www/kensgames/
+sudo systemctl restart kensgames
+```
+
+---
+
+## Developer Workflow
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Dev Machine (Windows)                              │
+│                                                     │
+│  1. Edit source in games/, width/engine/, etc.      │
+│  2. Build: node width/engine/deploy/build.js        │
+│  3. Test:  node width/engine/deploy/artifacts/      │
+│            schwarz-diamond.point.js                 │
+│            → http://localhost:3000                   │
+│  4. Commit & push: git push origin main             │
+└──────────────────────┬──────────────────────────────┘
+                       │ git push
+                       ▼
+              ┌─────────────────┐
+              │  GitHub          │
+              │  butterfly-      │
+              │  platform.git    │
+              └────────┬────────┘
+                       │ git pull
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│  VPS (Ubuntu)                                       │
+│                                                     │
+│  1. git pull origin main                            │
+│  2. node width/engine/deploy/build.js               │
+│  3. cp artifact → /var/www/kensgames/               │
+│  4. systemctl restart kensgames                     │
+│                                                     │
+│  nginx (443/SSL) → node (3000) → schwarz-diamond    │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Build System — Point Collapse
+
+```bash
 node width/engine/deploy/build.js
 ```
 
-**Output:** `width/engine/deploy/artifacts/schwarz-diamond.point.js` (~8 MB)
-
 The build script:
-1. Reads engine modules from `width/engine/`
-2. Ingests all games from `games/` (BrickBreaker3D, FastTrack, etc.)
+1. Reads engine modules from `width/engine/` (OSI layers, substrates, drivers)
+2. Ingests all games from `games/` (auto-discovers directories)
 3. Ingests shared libraries from `width/lib/` (Three.js, jQuery, Bootstrap, fonts)
 4. Collapses everything into a single IIFE with an embedded HTTP server
 
-**Verify build output:**
-```
-  POINT COLLAPSE CLEAN -- all dimensions present
-```
+**Output:** `width/engine/deploy/artifacts/schwarz-diamond.point.js`
 
-If you see `SKIP` or errors, a source file is missing.
+**Verify:** Look for `POINT COLLAPSE CLEAN -- all dimensions present` in build output.
 
 ---
 
-## Step 2: Transfer to VPS
+## Service Management
 
 ```bash
-scp -o StrictHostKeyChecking=no \
-  width/engine/deploy/artifacts/schwarz-diamond.point.js \
-  butterfly@100.70.142.122:/opt/schwarz-diamond/schwarz-diamond.point.js
-```
+# Status
+sudo systemctl status kensgames
 
-Or use the PowerShell deploy script (does build + transfer + systemd in one step):
-```powershell
-.\width\engine\deploy\deploy.ps1
-# Options: -DryRun, -SkipBuild, -Target "IP", -User "user"
-```
+# Restart (after redeploy)
+sudo systemctl restart kensgames
 
----
+# Live logs
+journalctl -u kensgames -f
 
-## Step 3: Start / Restart the Service
-
-### Option A: systemd (recommended — auto-restarts on crash/reboot)
-
-```bash
-# Create the service (one-time setup)
-sudo tee /etc/systemd/system/schwarz-diamond.service << 'EOF'
-[Unit]
-Description=Schwarz Diamond Point (manifold server)
-After=network.target
-
-[Service]
-Type=simple
-User=butterfly
-WorkingDirectory=/opt/schwarz-diamond
-Environment=PORT=3000
-ExecStart=/usr/bin/node /opt/schwarz-diamond/schwarz-diamond.point.js
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable schwarz-diamond
-sudo systemctl restart schwarz-diamond
-```
-
-**After each redeploy, just run:**
-```bash
-sudo systemctl restart schwarz-diamond
-```
-
-**Check status:**
-```bash
-sudo systemctl status schwarz-diamond
-journalctl -u schwarz-diamond -f          # live logs
-journalctl -u schwarz-diamond --since "5 min ago"  # recent logs
-```
-
-```bash
-sudo tee /etc/nginx/sites-available/kensgames.com << 'EOF'
-server {
-    listen 80;
-    server_name kensgames.com www.kensgames.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-EOF
-
-sudo ln -sf /etc/nginx/sites-available/kensgames.com /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t && sudo systemctl restart nginx
-
-# SSL (after DNS A records point to 100.70.142.122)
-sudo certbot --nginx -d kensgames.com -d www.kensgames.com --non-interactive --agree-tos -m ken.bingham64@gmail.com
-```
-
----
-
-## Quick Reference — Full Redeploy (copy-paste)
-
-**From dev machine:**
-```bash
-node width/engine/deploy/build.js && \
-scp -o StrictHostKeyChecking=no \
-  width/engine/deploy/artifacts/schwarz-diamond.point.js \
-  butterfly@100.70.142.122:/opt/schwarz-diamond/schwarz-diamond.point.js
-```
-
-**Then on VPS:**
-```bash
-sudo systemctl restart schwarz-diamond
+# Recent logs
+journalctl -u kensgames --since "5 min ago"
 ```
 
 ---
 
 ## Apps on the Manifold
 
-| App | URL Path | Notes |
+| App | URL | Notes |
 |---|---|---|
-| BrickBreaker3D | `/brickbreaker3d/` | Fully client-side, perpetual motion physics |
-| FastTrack | `/fasttrack/` | Lobby → AI Setup → Board. Offline vs Bots works. Multiplayer requires WebSocket server (not in Point). |
+| FastTrack | `https://kensgames.com/fasttrack/board_3d.html` | 6-player hex board game, AI opponents |
+| BrickBreaker3D | `https://kensgames.com/brickbreaker3d/` | Physics-based arcade |
+
+**Adding a new game:** Create `games/<name>/` with an `index.html`, rebuild, redeploy. The build script auto-discovers it.
 
 ---
 
@@ -175,49 +148,19 @@ sudo systemctl restart schwarz-diamond
 
 | Symptom | Fix |
 |---|---|
-| `EADDRINUSE` | Another process on port 3000. Run `sudo lsof -i :3000` and kill it, or `sudo systemctl stop schwarz-diamond` first. |
-| Browser shows old version | Hard refresh: **Ctrl+Shift+R**. Browser caches aggressively. |
-| `Not on the surface` (404) | The requested file isn't in the artifact. Rebuild with `node width/engine/deploy/build.js`. |
-| Service won't start | Check `journalctl -u schwarz-diamond -f` for Node.js errors. |
-| CSS/JS not loading | Check browser dev tools Network tab. Lib paths must resolve through the manifold router. |
-| `Cannot find module` | Node.js version too old. Must be v18+. |
+| `EADDRINUSE` | `sudo lsof -i :3000` and kill, or `sudo systemctl stop kensgames` |
+| Browser shows old version | Hard refresh: **Ctrl+Shift+R** |
+| `Not on the surface` (404) | File not in artifact — rebuild |
+| Service won't start | `journalctl -u kensgames -n 30` |
+| SSL cert expired | `sudo certbot renew` |
+| `Cannot find module` | Node.js too old — must be v18+ |
 
 ---
 
-## Architecture Notes
+## Architecture
 
-- **One file ships.** `schwarz-diamond.point.js` contains the engine, all games, all libraries, and the HTTP server.
-- **No source code on the VPS.** Only the collapsed artifact. No `node_modules`, no `package.json`.
-- **No build tools on the VPS.** Building happens on the dev machine. The VPS only needs `node`.
-- **Adding a new game:** Put files in `games/<name>/` on the dev machine, rebuild, redeploy. The build script auto-discovers game directories.
-
-### Option B: Manual (quick testing)
-
-```bash
-pkill -f schwarz-diamond.point.js
-cd /opt/schwarz-diamond && PORT=3000 node schwarz-diamond.point.js
-```
-
----
-
-## Step 4: Verify
-
-```bash
-curl -s http://127.0.0.1:3000/ | head -5
-# Should return HTML with "Schwarz Diamond Point"
-
-curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/brickbreaker3d/
-# Should return 200
-
-curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/fasttrack/
-# Should return 200
-```
-
----
-
-## Step 5: Nginx + SSL (for kensgames.com)
-
-```bash
-sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx
-```
+- **One file ships.** The artifact contains engine + all games + all libraries + HTTP server.
+- **No source code on the VPS.** Only the collapsed artifact runs. The repo is just the delivery mechanism.
+- **No `node_modules`.** No `npm install`. No `package.json`. Just `node artifact.js`.
+- **Source of truth is GitHub.** All edits happen on dev machine, push to GitHub, pull on VPS.
 
