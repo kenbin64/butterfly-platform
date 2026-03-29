@@ -1,0 +1,257 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AIEngine = void 0;
+const entity_store_1 = require("../../core/substrate/entity-store");
+const dimensional_1 = require("../../core/dimensional");
+// AI engine using manifold-based artificial intelligence
+class AIEngine {
+    constructor() {
+        this.isRunning = false;
+        this.initializeNeuralNetwork();
+        this.initializeStore();
+        this.initializeDimensionalState();
+    }
+    initializeNeuralNetwork() {
+        // Manifold-based neural network initialization
+        this.neuralNetwork = {
+            layers: [
+                { neurons: 64, activation: "relu" },
+                { neurons: 32, activation: "relu" },
+                { neurons: 16, activation: "relu" },
+                { neurons: 4, activation: "softmax" }
+            ],
+            weights: [],
+            biases: [],
+            learningRate: 0.01
+        };
+        // Manifold-based weight initialization
+        this.initializeWeights();
+    }
+    initializeWeights() {
+        // Manifold-based weight initialization using substrate patterns
+        for (let i = 0; i < this.neuralNetwork.layers.length - 1; i++) {
+            const inputSize = this.neuralNetwork.layers[i].neurons;
+            const outputSize = this.neuralNetwork.layers[i + 1].neurons;
+            // Manifold-based weight matrix
+            const weights = new Array(inputSize).fill(0).map(() => new Array(outputSize).fill(0).map(() => Math.random() * 2 - 1));
+            // Manifold-based bias vector
+            const biases = new Array(outputSize).fill(0).map(() => Math.random() * 2 - 1);
+            this.neuralNetwork.weights.push(weights);
+            this.neuralNetwork.biases.push(biases);
+        }
+    }
+    initializeStore() {
+        // Create AI entity store
+        this.aiStore = new entity_store_1.EntityStore("ai");
+        // Manifold-based AI properties
+        this.aiStore.set("aiSettings", {
+            maxDepth: 5,
+            maxBreadth: 10,
+            learningRate: 0.01,
+            explorationRate: 0.1
+        });
+        this.aiStore.set("agents", {});
+    }
+    initializeDimensionalState() {
+        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState.drill("ai", "status").value = "initialized";
+        this.dimensionalState.drill("ai", "agentCount").value = 0;
+        this.dimensionalState.drill("ai", "training").value = false;
+    }
+    createAgent(id, properties) {
+        // Manifold-based agent creation
+        this.aiStore.set(id, {
+            ...properties,
+            type: properties.type || "generic",
+            state: properties.state || {},
+            memory: properties.memory || [],
+            rewards: properties.rewards || [],
+            isActive: true,
+            createdAt: Date.now()
+        });
+        // Update dimensional state
+        const currentCount = this.dimensionalState.drill("ai", "agentCount").value;
+        this.dimensionalState.drill("ai", "agentCount").value = currentCount + 1;
+    }
+    removeAgent(id) {
+        const result = this.aiStore.delete(id);
+        if (result) {
+            const currentCount = this.dimensionalState.drill("ai", "agentCount").value;
+            this.dimensionalState.drill("ai", "agentCount").value = currentCount - 1;
+        }
+        return result;
+    }
+    updateAgent(id, properties) {
+        const agent = this.aiStore.get(id);
+        if (agent) {
+            this.aiStore.set(id, { ...agent, ...properties });
+        }
+    }
+    getAgent(id) {
+        return this.aiStore.get(id);
+    }
+    getAllAgents() {
+        return this.aiStore.getAll().map(({ entity }) => entity);
+    }
+    predict(input) {
+        // Manifold-based neural network prediction
+        let currentInput = input;
+        for (let i = 0; i < this.neuralNetwork.layers.length - 1; i++) {
+            const weights = this.neuralNetwork.weights[i];
+            const biases = this.neuralNetwork.biases[i];
+            // Manifold-based matrix multiplication
+            const output = new Array(weights[0].length).fill(0);
+            for (let j = 0; j < weights.length; j++) {
+                for (let k = 0; k < weights[j].length; k++) {
+                    output[k] += currentInput[j] * weights[j][k];
+                }
+            }
+            // Manifold-based bias addition and activation
+            for (let j = 0; j < output.length; j++) {
+                output[j] = this.activate(output[j] + biases[j], this.neuralNetwork.layers[i + 1].activation);
+            }
+            currentInput = output;
+        }
+        return currentInput;
+    }
+    train(inputs, targets) {
+        // Manifold-based neural network training
+        for (let epoch = 0; epoch < 100; epoch++) {
+            for (let i = 0; i < inputs.length; i++) {
+                const input = inputs[i];
+                const target = targets[i];
+                // Manifold-based forward pass
+                const predictions = this.predict(input);
+                // Manifold-based backpropagation
+                this.backpropagate(input, predictions, target);
+            }
+        }
+    }
+    backpropagate(input, prediction, target) {
+        // Manifold-based backpropagation
+        const errors = new Array(prediction.length).fill(0);
+        for (let i = 0; i < prediction.length; i++) {
+            errors[i] = target[i] - prediction[i];
+        }
+        // Manifold-based weight updates
+        for (let i = this.neuralNetwork.layers.length - 2; i >= 0; i--) {
+            const weights = this.neuralNetwork.weights[i];
+            const biases = this.neuralNetwork.biases[i];
+            for (let j = 0; j < weights.length; j++) {
+                for (let k = 0; k < weights[j].length; k++) {
+                    weights[j][k] += this.neuralNetwork.learningRate * errors[k] * input[j];
+                }
+            }
+            for (let j = 0; j < biases.length; j++) {
+                biases[j] += this.neuralNetwork.learningRate * errors[j];
+            }
+        }
+    }
+    activate(x, activation) {
+        // Manifold-based activation functions
+        switch (activation) {
+            case "relu":
+                return Math.max(0, x);
+            case "sigmoid":
+                return 1 / (1 + Math.exp(-x));
+            case "softmax":
+                return Math.exp(x);
+            case "tanh":
+                return Math.tanh(x);
+            default:
+                return x;
+        }
+    }
+    makeDecision(agentId, state) {
+        // Manifold-based decision making
+        const agent = this.getAgent(agentId);
+        if (!agent || !agent.isActive)
+            return null;
+        // Manifold-based state encoding
+        const encodedState = this.encodeState(state);
+        // Manifold-based prediction
+        const prediction = this.predict(encodedState);
+        // Manifold-based action selection
+        const action = this.selectAction(prediction, agent);
+        // Manifold-based memory update
+        this.updateMemory(agentId, state, action, prediction);
+        return action;
+    }
+    encodeState(state) {
+        // Manifold-based state encoding
+        return [
+            state.position ? state.position.x / 1000 : 0,
+            state.position ? state.position.y / 1000 : 0,
+            state.health ? state.health / 100 : 0,
+            state.velocity ? state.velocity.x / 100 : 0,
+            state.velocity ? state.velocity.y / 100 : 0
+        ];
+    }
+    selectAction(prediction, agent) {
+        // Manifold-based action selection (epsilon-greedy)
+        const explorationRate = this.aiStore.get("aiSettings").explorationRate;
+        if (Math.random() < explorationRate) {
+            // Random action
+            return {
+                type: "random",
+                action: Math.floor(Math.random() * prediction.length)
+            };
+        }
+        else {
+            // Greedy action
+            const maxIndex = prediction.indexOf(Math.max(...prediction));
+            return {
+                type: "predicted",
+                action: maxIndex
+            };
+        }
+    }
+    updateMemory(agentId, state, action, prediction) {
+        const agent = this.getAgent(agentId);
+        if (agent) {
+            const memory = agent.memory || [];
+            memory.push({
+                state: state,
+                action: action,
+                prediction: prediction,
+                timestamp: Date.now()
+            });
+            // Manifold-based memory management
+            if (memory.length > 1000) {
+                memory.shift();
+            }
+            this.updateAgent(agentId, { memory: memory });
+        }
+    }
+    startTraining() {
+        this.dimensionalState.drill("ai", "training").value = true;
+        console.log("AIEngine training started - manifold-based");
+    }
+    stopTraining() {
+        this.dimensionalState.drill("ai", "training").value = false;
+        console.log("AIEngine training stopped");
+    }
+    start() {
+        this.isRunning = true;
+        this.dimensionalState.drill("ai", "status").value = "running";
+        console.log("AIEngine started - manifold-based");
+    }
+    stop() {
+        this.isRunning = false;
+        this.dimensionalState.drill("ai", "status").value = "stopped";
+        console.log("AIEngine stopped");
+    }
+    getStats() {
+        return {
+            status: this.dimensionalState.drill("ai", "status").value,
+            agentCount: this.dimensionalState.drill("ai", "agentCount").value,
+            training: this.dimensionalState.drill("ai", "training").value,
+            neuralNetwork: {
+                layers: this.neuralNetwork.layers.length,
+                learningRate: this.neuralNetwork.learningRate
+            },
+            memoryUsage: this.aiStore.getStats()
+        };
+    }
+}
+exports.AIEngine = AIEngine;

@@ -18,6 +18,8 @@ Git-based deployment pattern:
 
        git clone git@github.com:<ORG>/<REPO>.git
 
+       https://github.com/kenbin64/butterfly-platform.git
+
 2. Build or package locally or on the VPS.
 
 3. Deploy to VPS via Tailscale:
