@@ -1,0 +1,35 @@
+# MANIFOLD RULES - Quick Reference
+
+## FORBIDDEN
+- for/forEach/map over dimensions (infinite)
+- array.find() / array.filter() (scanning)
+- external caches/indexes (manifold IS index)
+- tree traversal (drill instead)
+- temporary result arrays (pattern match instead)
+
+## REQUIRED  
+- drill() for exact coordinates → O(1)
+- match(regex) for pattern at level
+- search([regex...]) for recursive pattern
+- find([regex...]) for first match
+- withValue() for versioned mutation
+- observe() for reactive updates
+
+## THE FIVE LAWS
+1. Dimensions are INFINITE - only address discrete points
+2. DETERMINISTIC - same drill = same result always
+3. VERSIONED - old values persist, history is free
+4. O(1) ACCESS - drill directly, don't search
+5. REGEX ADDRESSING - patterns describe coordinates
+
+## DEBUGGING
+- Wrong result → wrong coordinate
+- Missing data → wrong path  
+- Stale value → wrong version
+- Check: .path, .value, .version.id
+
+## MENTAL MODEL
+You are NAVIGATING, not COMPUTING.
+The manifold already contains all answers.
+Align yourself with the manifold.
+

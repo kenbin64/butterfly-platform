@@ -1,0 +1,263 @@
+/* Manifold Gaming Platform - CSS */
+:root {
+  --bg-void: #0a0a10;
+  --bg-panel: rgba(15, 15, 25, 0.85);
+  --border-glow: rgba(0, 180, 255, 0.3);
+  --accent-cyan: #00d4ff;
+  --accent-magenta: #ff2d95;
+  --accent-gold: #ffd700;
+  --text-primary: #e8e8f0;
+  --text-secondary: #888898;
+  --prestige-bronze: #cd7f32;
+  --prestige-silver: #c0c0c0;
+  --prestige-gold: #ffd700;
+  --prestige-diamond: #b9f2ff;
+  --prestige-platinum: #e5e4e2;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: 'Rajdhani', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Background Canvas */
+#manifold-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+}
+.platform-overlay {
+  position: relative; z-index: 1; min-height: 100vh;
+}
+
+/* Screens */
+.screen { display: none; min-height: 100vh; padding: 20px; }
+.screen.active { display: block; }
+
+/* Auth Screen */
+#auth-screen {
+  display: flex; flex-direction: column; align-items: center; 
+  justify-content: center; gap: 30px;
+}
+.logo-container { text-align: center; }
+.diamond-logo {
+  font-size: 80px; color: var(--accent-cyan);
+  text-shadow: 0 0 40px var(--accent-cyan), 0 0 80px var(--accent-magenta);
+  animation: pulse 3s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+.logo-text {
+  font-family: 'Orbitron', sans-serif; font-size: 48px; font-weight: 900;
+  letter-spacing: 0.3em; color: var(--text-primary);
+  text-shadow: 0 0 20px var(--accent-cyan);
+}
+.tagline { color: var(--text-secondary); font-size: 1.1rem; margin-top: 8px; letter-spacing: 0.2em; }
+
+/* Glass Panel */
+.glass-panel {
+  background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 16px; padding: 30px; backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.auth-card { width: 100%; max-width: 400px; }
+
+/* Auth Tabs */
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+.auth-tab {
+  flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border-glow);
+  border-radius: 8px; color: var(--text-secondary); font-size: 1rem;
+  cursor: pointer; transition: all 0.3s;
+}
+.auth-tab.active, .auth-tab:hover {
+  background: var(--accent-cyan); color: var(--bg-void); border-color: var(--accent-cyan);
+}
+
+/* Forms */
+.auth-form { display: none; }
+.auth-form.active { display: block; }
+.input-group { margin-bottom: 16px; }
+.input-group label {
+  display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 0.9rem;
+}
+.input-group input {
+  width: 100%; padding: 12px 16px; background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-glow); border-radius: 8px;
+  color: var(--text-primary); font-size: 1rem; transition: border-color 0.3s;
+}
+.input-group input:focus {
+  outline: none; border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+/* Buttons */
+.btn {
+  display: block; width: 100%; padding: 14px 20px;
+  border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+  color: var(--bg-void);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4); }
+.btn-secondary {
+  background: transparent; border: 1px solid var(--border-glow); color: var(--text-primary);
+  margin-top: 10px;
+}
+.btn-secondary:hover { background: rgba(0, 212, 255, 0.1); border-color: var(--accent-cyan); }
+
+.auth-divider {
+  display: flex; align-items: center; margin: 20px 0; color: var(--text-secondary);
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-glow);
+}
+.auth-divider span { padding: 0 15px; }
+
+.security-badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: rgba(0, 50, 100, 0.3);
+  border-radius: 20px; color: var(--accent-cyan); font-size: 0.85rem;
+}
+.seed-indicator { animation: spin 4s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Header */
+.platform-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 20px; background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-glow);
+}
+.header-logo {
+  font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 700;
+  color: var(--accent-cyan);
+}
+.user-info { display: flex; align-items: center; gap: 12px; }
+.prestige-badge {
+  padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;
+  background: var(--prestige-bronze); color: var(--bg-void);
+}
+.username { color: var(--text-primary); }
+.avatar { font-size: 1.5rem; }
+
+/* Navigation */
+.app-nav {
+  display: flex; gap: 10px; padding: 15px 20px;
+  border-bottom: 1px solid var(--border-glow); overflow-x: auto;
+}
+.nav-btn {
+  padding: 10px 20px; background: transparent; border: 1px solid var(--border-glow);
+  border-radius: 8px; color: var(--text-secondary); font-size: 0.95rem;
+  cursor: pointer; white-space: nowrap; transition: all 0.3s;
+}
+.nav-btn.active, .nav-btn:hover {
+  background: var(--accent-cyan); color: var(--bg-void); border-color: var(--accent-cyan);
+}
+
+/* Panels */
+.panel { display: none; padding: 20px; }
+.panel.active { display: block; }
+.panel-title {
+  font-family: 'Orbitron', sans-serif; font-size: 1.8rem;
+  margin-bottom: 10px; color: var(--text-primary);
+}
+.panel-desc { color: var(--text-secondary); margin-bottom: 20px; }
+
+/* Quick Actions */
+.quick-actions {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px; margin-bottom: 30px;
+}
+.action-card {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px; background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 12px; cursor: pointer; transition: all 0.3s;
+}
+.action-card:hover {
+  transform: translateY(-4px); border-color: var(--accent-cyan);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
+}
+.action-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.action-title { font-weight: 600; font-size: 1.1rem; color: var(--text-primary); }
+.action-desc { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* Lobby Sections */
+.lobby-section {
+  background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 12px; padding: 20px; margin-bottom: 20px;
+}
+.lobby-section h3 { margin-bottom: 15px; color: var(--accent-cyan); }
+.room-list { min-height: 80px; }
+.empty-state { color: var(--text-secondary); text-align: center; padding: 20px; }
+.empty-state a { color: var(--accent-cyan); }
+
+/* Room Card */
+.room-card {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px;
+  margin-bottom: 10px; transition: all 0.3s;
+}
+.room-card:hover { background: rgba(0, 212, 255, 0.1); }
+.room-info { flex: 1; }
+.room-name { font-weight: 600; color: var(--text-primary); }
+.room-details { font-size: 0.85rem; color: var(--text-secondary); }
+.room-join {
+  padding: 8px 16px; background: var(--accent-cyan); color: var(--bg-void);
+  border: none; border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+
+/* Grids */
+.games-grid, .zenxy-grid, .arcade-grid, .market-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px; margin-bottom: 30px;
+}
+.app-card {
+  background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.4s;
+}
+.app-card:hover {
+  transform: translateY(-6px) scale(1.02); border-color: var(--accent-cyan);
+  box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2);
+}
+.app-card-icon {
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; background: linear-gradient(135deg, rgba(0, 50, 100, 0.4), rgba(100, 0, 100, 0.3));
+}
+.app-card-body { padding: 15px; }
+.app-card-title { font-weight: 700; font-size: 1.2rem; margin-bottom: 6px; }
+.app-card-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
+.app-card-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  padding: 3px 10px; border-radius: 12px; font-size: 0.7rem;
+  border: 1px solid var(--border-glow); color: var(--accent-cyan);
+}
+
+/* Game Room */
+.room-header {
+  display: flex; align-items: center; gap: 15px;
+  padding: 15px 20px; background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-glow);
+}
+.btn-back {
+  background: transparent; border: none; color: var(--text-primary);
+  font-size: 1rem; cursor: pointer;
+}
+.room-code {
+  flex: 1; text-align: center; font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem; letter-spacing: 0.3em; color: var(--accent-gold);
+}
+.room-content { padding: 20px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .logo-text { font-size: 32px; letter-spacing: 0.15em; }
+  .diamond-logo { font-size: 60px; }
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
+}
+

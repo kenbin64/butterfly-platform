@@ -1,0 +1,15 @@
+@'
+server:
+  listen: "127.0.0.1:5200"
+
+chat_model:
+  model: "qwen"
+  context_length: 16384
+  temperature: 0.1
+  top_p: 0.9
+  max_tokens: 2048
+'@ | Out-File -FilePath .\tabby.yaml -Encoding utf8NoBOM
+
+Get-Content .\tabby.yaml -Raw
+
+

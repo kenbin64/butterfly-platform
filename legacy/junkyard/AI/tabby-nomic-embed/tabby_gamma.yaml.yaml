@@ -1,0 +1,11 @@
+model_dir: "C:\\AI\\tabby-gamma\\model\\tabby-gamma\\"
+
+chat_model:
+  model: "gemma-3-4b-it-Q4_K_M.gguf"
+  context_length: 8192
+  temperature: 0.1
+  top_p: 0.9
+  max_tokens: 2048
+
+server:
+ listen: "127.0.0.1:5400"

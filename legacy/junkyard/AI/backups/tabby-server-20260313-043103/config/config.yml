@@ -1,0 +1,87 @@
+# System prompt loaded at startup
+system_prompt_file: "../butterflyfx-system.txt"
+
+# Default model key
+model:
+  default: "deepseek"
+
+  # Registry of available models (keys used to select)
+  registry:
+    deepseek:
+      type: "llama"
+      path: "../models/deepseek-coder-1.3b-instruct.Q4_K_M.gguf"
+      context_length: 4096
+      temperature: 0.2
+      top_p: 0.95
+      top_k: 40
+      repeat_penalty: 1.1
+
+    gemma:
+      type: "llama"
+      path: "../models/gemma-3-4b-it-Q4_K_M.gguf"
+      context_length: 4096
+      temperature: 0.25
+      top_p: 0.92
+      top_k: 40
+      repeat_penalty: 1.05
+
+    mmproj:
+      type: "llama"
+      path: "../models/mmproj-model-f16.gguf"
+      context_length: 2048
+      temperature: 0.2
+      top_p: 0.9
+      top_k: 40
+      repeat_penalty: 1.05
+
+    fallback:
+      type: "llama"
+      path: "../models/model-00001-of-00001.gguf"
+      context_length: 2048
+      temperature: 0.3
+      top_p: 0.9
+      top_k: 40
+      repeat_penalty: 1.05
+
+    nomic-embed:
+      type: "embed"
+      path: "../models/nomic-embed-text-v1.5.Q4_K_M.gguf"
+      # embedding models may be used separately by your app; keep config here for reference
+
+# Server settings
+server:
+  host: "0.0.0.0"
+  port: 8080
+  allow_remote: false
+
+# Completion defaults
+completion:
+  max_tokens: 512
+  temperature: 0.2
+  top_p: 0.95
+  stop_sequences: []
+
+# Chat defaults
+chat:
+  max_tokens: 1024
+  temperature: 0.3
+  top_p: 0.95
+
+# Logging
+logging:
+  level: "info"
+  file: "../tabby.log"
+
+# Telemetry
+telemetry:
+  enabled: false
+
+# Repository / file indexing (disabled for privacy)
+repository:
+  enable_file_indexing: false
+  max_file_size_kb: 512
+  ignored_patterns:
+    - ".git/"
+    - "node_modules/"
+    - "dist/"
+    - "build/"

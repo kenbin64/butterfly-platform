@@ -1,0 +1,47 @@
+# run_command.py
+# Deterministic local command executor for ButterflyFX Agent.
+# Location: C:\AI\tabby-server\agents\tools\run_command.py
+
+import subprocess
+from typing import Optional
+
+DEFAULT_TIMEOUT = 30  # seconds
+
+def run_command(cmd: str, timeout: Optional[int] = None) -> str:
+    """
+    Execute a local shell command and return its output as plain text.
+
+    Parameters:
+        cmd: Command string to execute.
+        timeout: Optional timeout in seconds. Defaults to DEFAULT_TIMEOUT.
+
+    Returns:
+        - stdout if successful
+        - combined stderr/stdout if there is stderr
+        - an [ERROR] message on failure
+    """
+    if not isinstance(cmd, str) or not cmd.strip():
+        return "[ERROR] Missing parameter: cmd"
+
+    try:
+        to = timeout if timeout is not None else DEFAULT_TIMEOUT
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=to
+        )
+        stdout = result.stdout.strip()
+        stderr = result.stderr.strip()
+
+        if result.returncode != 0:
+            if stderr:
+                return f"[STDERR]\n{stderr}\n\n[STDOUT]\n{stdout}"
+            return f"[ERROR] Command exited with code {result.returncode}\n\n[STDOUT]\n{stdout}"
+
+        return stdout if stdout else "[OK] (no output)"
+    except subprocess.TimeoutExpired as e:
+        return f"[ERROR] Command timed out after {to} seconds"
+    except Exception as e:
+        return f"[ERROR] Command failed: {e}"

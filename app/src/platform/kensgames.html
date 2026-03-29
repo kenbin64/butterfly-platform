@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KensGames - Diamond Drill Gaming Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="kensgames.css">
+</head>
+<body>
+  <canvas id="manifold-bg"></canvas>
+  <div class="platform-overlay">
+    
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- AUTH SCREEN -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section id="auth-screen" class="screen active">
+      <div class="logo-container">
+        <div class="drill-logo">◈</div>
+        <h1 class="logo-text">KENSGAMES</h1>
+        <p class="tagline">Diamond Drill Gaming • z=xy Manifold Engine</p>
+      </div>
+      
+      <div class="auth-card glass-panel">
+        <div class="profile-setup">
+          <h2>Create Your Identity</h2>
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="username-input" placeholder="Enter username" maxlength="16">
+          </div>
+          <div class="avatar-picker">
+            <label>Choose Avatar</label>
+            <div class="avatar-grid" id="avatar-grid"></div>
+          </div>
+          <button class="btn btn-primary" onclick="KensGames.enterPlatform()">
+            ⟐ Enter KensGames
+          </button>
+        </div>
+        
+        <div class="auth-divider"><span>or</span></div>
+        <button class="btn btn-secondary" onclick="KensGames.guestMode()">👤 Play as Guest</button>
+        <button class="btn btn-secondary" onclick="KensGames.joinByCode()">🎟️ Join Game by Code</button>
+      </div>
+      
+      <div class="manifold-badge">
+        <span class="seed-icon">◇</span>
+        <span>Substrate Seed Storage • 99.99% Compression</span>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- LOBBY SCREEN -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section id="lobby-screen" class="screen">
+      <header class="platform-header">
+        <div class="header-logo">◈ KENSGAMES</div>
+        <div class="user-info">
+          <span class="username" id="display-name">Player</span>
+          <span class="avatar" id="display-avatar">👤</span>
+        </div>
+      </header>
+
+      <!-- Game Selection -->
+      <div class="games-section">
+        <h2 class="section-title">🎮 Choose Your Game</h2>
+        <div class="game-cards" id="game-cards"></div>
+      </div>
+
+      <!-- Matchmaking Options -->
+      <div class="matchmaking-section glass-panel" id="matchmaking-panel" style="display:none;">
+        <h3 id="selected-game-title">Game</h3>
+        <div class="match-options">
+          <button class="match-btn" onclick="KensGames.vsAI()">
+            <span class="match-icon">🤖</span>
+            <span class="match-title">vs AI</span>
+            <span class="match-desc">Play with AI opponents</span>
+          </button>
+          <button class="match-btn" onclick="KensGames.quickMatch()">
+            <span class="match-icon">⚡</span>
+            <span class="match-title">Quick Match</span>
+            <span class="match-desc">Find players online</span>
+          </button>
+          <button class="match-btn" onclick="KensGames.createPrivate()">
+            <span class="match-icon">🔒</span>
+            <span class="match-title">Private Game</span>
+            <span class="match-desc">Share code with friends</span>
+          </button>
+        </div>
+        <div class="ai-settings" id="ai-settings" style="display:none;">
+          <label>AI Difficulty</label>
+          <select id="ai-difficulty">
+            <option value="easy">Easy 🟢</option>
+            <option value="medium" selected>Medium 🟡</option>
+            <option value="hard">Hard 🔴</option>
+          </select>
+          <label>Number of AI Players</label>
+          <select id="ai-count">
+            <option value="1">1 AI</option>
+            <option value="2">2 AI</option>
+            <option value="3" selected>3 AI</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active Rooms -->
+      <div class="rooms-section">
+        <h3>🎲 Active Rooms</h3>
+        <div class="room-list" id="room-list">
+          <p class="empty-state">No active rooms. Create one above!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- GAME ROOM SCREEN -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section id="room-screen" class="screen">
+      <div class="room-header">
+        <button class="btn-back" onclick="KensGames.leaveRoom()">← Leave</button>
+        <div class="room-code-display">
+          <span>Room Code:</span>
+          <span class="room-code" id="room-code">XXXXXX</span>
+          <button class="btn-copy" onclick="KensGames.copyCode()">📋</button>
+        </div>
+      </div>
+      <div class="room-content" id="room-content">
+        <div class="players-panel glass-panel">
+          <h3>👥 Players</h3>
+          <div id="room-players"></div>
+        </div>
+        <div class="room-actions">
+          <button class="btn btn-primary" id="start-btn" onclick="KensGames.startGame()" disabled>
+            ⚡ Start Game
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="games/game-manifold.js"></script>
+  <script src="lobby/lobby-manifold.js"></script>
+  <script src="kensgames.js"></script>
+</body>
+</html>
+

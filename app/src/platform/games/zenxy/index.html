@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenxy Experiences - Manifold Gaming</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #0a0a10; --bg-panel: rgba(15, 15, 25, 0.85);
+      --border-glow: rgba(0, 180, 255, 0.3); --accent-cyan: #00d4ff;
+      --accent-magenta: #ff2d95; --accent-gold: #ffd700;
+      --text-primary: #e8e8f0; --text-secondary: #888898;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg-void); color: var(--text-primary); font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
+    canvas#bg { position: fixed; top: 0; left: 0; z-index: 0; }
+    .overlay { position: relative; z-index: 1; }
+    
+    header {
+      text-align: center; padding: 60px 20px 30px;
+      background: linear-gradient(180deg, rgba(10,10,15,0) 0%, rgba(10,10,15,0.95) 100%);
+    }
+    .back-link { position: absolute; left: 20px; top: 20px; color: var(--text-secondary); text-decoration: none; }
+    h1 {
+      font-family: 'Orbitron'; font-size: 3.5rem; font-weight: 200; letter-spacing: 0.4em;
+      background: linear-gradient(135deg, #00d4ff, #7b2ff7, #ff2d95);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { font-size: 1rem; color: #888; margin-top: 10px; letter-spacing: 0.2em; }
+    
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px; padding: 40px 5%; max-width: 1600px; margin: 0 auto;
+    }
+    .card {
+      background: var(--bg-panel); border: 1px solid var(--border-glow);
+      border-radius: 16px; overflow: hidden; cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(10px); text-decoration: none; color: inherit;
+    }
+    .card:hover {
+      transform: translateY(-8px) scale(1.02); border-color: var(--accent-cyan);
+      box-shadow: 0 20px 60px rgba(0, 100, 200, 0.2), 0 0 30px rgba(0, 212, 255, 0.1);
+    }
+    .card-img {
+      height: 160px; display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; position: relative; overflow: hidden;
+    }
+    .c1 .card-img { background: linear-gradient(135deg, #1a0030, #0d0025, #000520); }
+    .c2 .card-img { background: linear-gradient(135deg, #002020, #001a1a, #000d20); }
+    .c3 .card-img { background: linear-gradient(135deg, #200010, #1a000d, #200005); }
+    .c4 .card-img { background: linear-gradient(135deg, #0d1a00, #001a0d, #000d1a); }
+    
+    .card-body { padding: 18px; }
+    .card-body h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; color: #fff; }
+    .card-body p { font-size: 0.85rem; color: #999; line-height: 1.4; }
+    .tag {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.7rem; margin-top: 10px; margin-right: 4px;
+      border: 1px solid var(--border-glow); color: var(--accent-cyan);
+    }
+    
+    footer { text-align: center; padding: 50px 20px; color: #555; font-size: 0.8rem; letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="overlay">
+    <header>
+      <a href="../../index.html" class="back-link">← Back to Platform</a>
+      <h1>Z E N X Y</h1>
+      <p class="subtitle">20 IMMERSIVE EXPERIENCES POWERED BY z = xy</p>
+      <p style="color:#555; margin-top:8px; font-size:0.8rem">Mathematical Fabric Computing • Diamond Drill Architecture</p>
+    </header>
+    <div class="grid" id="appGrid"></div>
+    <footer>© 2024-2026 Kenneth Bingham • Manifold Platform • CC BY 4.0</footer>
+  </div>
+  
+  <script>
+    const apps = [
+      {name:"BrickBreaker 3D",desc:"Smash bricks in 3D space. Physics via saddle reflection.",icon:"🧱",tags:["3D","Physics","Game"],cat:"c1",url:"brickbreaker/index.html"},
+      {name:"FastTrack",desc:"Classic board game with routing via cube connectivity.",icon:"🎲",tags:["Board","Strategy"],cat:"c2",url:"../fasttrack/index.html"},
+      {name:"Zenxy Calculator",desc:"Every operation via saddle math. See z=xy behind calculations.",icon:"🔢",tags:["Math","Tool"],cat:"c3",url:"calculator/index.html"},
+      {name:"Saddle Synth",desc:"Audio synthesizer driven by saddle oscillations.",icon:"🎹",tags:["Audio","Music"],cat:"c4",url:"synth/index.html"},
+      {name:"Cipher Engine",desc:"2^2058 possible keys — unbreakable cube-based encryption.",icon:"🔐",tags:["Crypto","Security"],cat:"c1",url:"cipher/index.html"},
+      {name:"Neural Playground",desc:"Train neural networks by flipping cube faces.",icon:"🧠",tags:["AI","Neural"],cat:"c2",url:"neural/index.html"},
+      {name:"Fractal Dive",desc:"Infinite recursive exploration through saddle coordinates.",icon:"🌀",tags:["Fractal","Visual"],cat:"c3",url:"fractal/index.html"},
+      {name:"Particle Flow",desc:"Millions of particles follow saddle surface flow.",icon:"✨",tags:["Particles","Visual"],cat:"c4",url:"particles/index.html"},
+      {name:"Terrain Generator",desc:"3D landscapes from saddle evaluations.",icon:"🏔️",tags:["Terrain","3D"],cat:"c1",url:"terrain/index.html"},
+      {name:"Logic Lab",desc:"Build digital circuits from saddle gates.",icon:"⚡",tags:["Logic","Circuit"],cat:"c2",url:"logic/index.html"},
+      {name:"Maze Runner",desc:"3D pathfinding through cube connectivity.",icon:"🏃",tags:["3D","Puzzle"],cat:"c3",url:"maze/index.html"},
+      {name:"Pattern Match",desc:"Pattern classification via quadrant analysis.",icon:"🎯",tags:["AI","Pattern"],cat:"c4",url:"pattern/index.html"},
+      {name:"Life on Saddle",desc:"Conway's Game of Life on the z=xy manifold.",icon:"🦠",tags:["Automata","Life"],cat:"c1",url:"life/index.html"},
+      {name:"Memory Cards",desc:"Card matching with Zenxy kernel state machine.",icon:"🃏",tags:["Memory","Game"],cat:"c2",url:"memory/index.html"},
+      {name:"Tic-Tac-Toe AI",desc:"AI opponent using Zenxy decision engine.",icon:"❌",tags:["AI","Strategy"],cat:"c3",url:"tictactoe/index.html"},
+      {name:"Data Compressor",desc:"Compress data via saddle harmonics.",icon:"📦",tags:["Compression","Tool"],cat:"c4",url:"compressor/index.html"},
+      {name:"Color Space",desc:"Color mixing on the saddle. RGB mapped to xyz.",icon:"🎨",tags:["Color","Creative"],cat:"c1",url:"colorspace/index.html"},
+      {name:"Sort Theater",desc:"Sorting algorithm visualizer via Zenxy kernel.",icon:"📊",tags:["Sort","Algorithm"],cat:"c2",url:"sort/index.html"},
+      {name:"State Designer",desc:"Visual finite state machine builder.",icon:"🔄",tags:["FSM","Design"],cat:"c3",url:"state/index.html"},
+      {name:"Cube Explorer",desc:"Interactive 7×7×7 cube visualizer.",icon:"🧊",tags:["3D","Explorer"],cat:"c4",url:"cube/index.html"}
+    ];
+    
+    const grid = document.getElementById('appGrid');
+    apps.forEach(a => {
+      const card = document.createElement('a');
+      card.href = a.url;
+      card.className = 'card ' + a.cat;
+      card.innerHTML = `<div class="card-img">${a.icon}</div><div class="card-body"><h3>${a.name}</h3><p>${a.desc}</p><div>${a.tags.map(t => '<span class="tag">' + t + '</span>').join('')}</div></div>`;
+      grid.appendChild(card);
+    });
+    
+    // Background saddle animation
+    const c = document.getElementById('bg'), ctx = c.getContext('2d');
+    function resize() { c.width = innerWidth; c.height = innerHeight; }
+    resize(); addEventListener('resize', resize);
+    let t = 0;
+    function draw() {
+      ctx.fillStyle = 'rgba(10,10,15,0.08)'; ctx.fillRect(0, 0, c.width, c.height);
+      for (let i = 0; i < 60; i++) {
+        const x = (Math.sin(t * 0.3 + i * 0.5) * 0.4 + 0.5) * c.width;
+        const y = (Math.cos(t * 0.2 + i * 0.7) * 0.4 + 0.5) * c.height;
+        const z = Math.sin(t + i) * Math.cos(t * 0.5 + i * 0.3);
+        const r = Math.abs(z) * 3 + 1;
+        const hue = 200 + z * 60;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue},70%,60%,${0.3 + Math.abs(z) * 0.3})`;
+        ctx.fill();
+      }
+      t += 0.005; requestAnimationFrame(draw);
+    }
+    draw();
+  </script>
+</body>
+</html>
+

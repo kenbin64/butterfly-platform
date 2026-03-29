@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manifold Gaming Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="platform.css">
+</head>
+<body>
+  <canvas id="manifold-bg"></canvas>
+  <div class="platform-overlay">
+    
+    <!-- Auth Screen -->
+    <section id="auth-screen" class="screen active">
+      <div class="logo-container">
+        <div class="diamond-logo">◈</div>
+        <h1 class="logo-text">MANIFOLD</h1>
+        <p class="tagline">Dimensional Gaming Platform</p>
+      </div>
+      
+      <div class="auth-card glass-panel">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="register">Register</button>
+        </div>
+        
+        <form id="login-form" class="auth-form active">
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="login-username" placeholder="Enter username" required>
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" required>
+          </div>
+          <button type="submit" class="btn btn-primary">⟐ Enter the Manifold</button>
+        </form>
+        
+        <form id="register-form" class="auth-form">
+          <div class="input-group">
+            <label>Choose Username</label>
+            <input type="text" id="reg-username" placeholder="Username" required minlength="3">
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="Password" required minlength="4">
+          </div>
+          <button type="submit" class="btn btn-primary">◈ Create Identity</button>
+        </form>
+        
+        <div class="auth-divider"><span>or</span></div>
+        
+        <button class="btn btn-secondary" onclick="guestMode()">👤 Play as Guest</button>
+        <button class="btn btn-secondary" onclick="joinByCode()">🎟️ Join by Code</button>
+      </div>
+      
+      <div class="security-badge">
+        <span class="seed-indicator">◇</span>
+        <span>Seed-Based Geometric Security</span>
+      </div>
+    </section>
+
+    <!-- Main Lobby Screen -->
+    <section id="lobby-screen" class="screen">
+      <header class="platform-header">
+        <div class="header-logo">◈ MANIFOLD</div>
+        <div class="user-info" id="user-info">
+          <span class="prestige-badge">BRONZE</span>
+          <span class="username">Player</span>
+          <span class="avatar">👤</span>
+        </div>
+      </header>
+
+      <nav class="app-nav">
+        <button class="nav-btn active" data-app="games">🎮 Games</button>
+        <button class="nav-btn" data-app="zenxy">✨ Zenxy</button>
+        <button class="nav-btn" data-app="arcade">🕹️ Arcade</button>
+        <button class="nav-btn" data-app="marketplace">🛒 Market</button>
+      </nav>
+
+      <!-- Games Panel -->
+      <div id="games-panel" class="panel active">
+        <div class="games-grid" id="games-grid"></div>
+        
+        <div class="quick-actions">
+          <button class="action-card" onclick="createGame('fasttrack')">
+            <span class="action-icon">🎲</span>
+            <span class="action-title">FastTrack</span>
+            <span class="action-desc">Strategic board game</span>
+          </button>
+          <button class="action-card" onclick="quickMatch()">
+            <span class="action-icon">⚡</span>
+            <span class="action-title">Quick Match</span>
+            <span class="action-desc">Find opponents</span>
+          </button>
+          <button class="action-card" onclick="createPrivate()">
+            <span class="action-icon">🔒</span>
+            <span class="action-title">Private Game</span>
+            <span class="action-desc">Invite friends</span>
+          </button>
+          <button class="action-card" onclick="vsAI()">
+            <span class="action-icon">🤖</span>
+            <span class="action-title">vs AI</span>
+            <span class="action-desc">Practice mode</span>
+          </button>
+        </div>
+
+        <div class="lobby-section">
+          <h3>🎮 Active Games</h3>
+          <div class="room-list" id="room-list">
+            <p class="empty-state">No active games. Create one above!</p>
+          </div>
+        </div>
+
+        <div class="lobby-section">
+          <h3>⚔️ Your Guild</h3>
+          <div id="guild-panel">
+            <p class="empty-state">Not in a guild. <a href="#" onclick="showGuildBrowser()">Find one</a></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zenxy Panel -->
+      <div id="zenxy-panel" class="panel">
+        <h2 class="panel-title">✨ ZENXY Experiences</h2>
+        <p class="panel-desc">20 immersive z=xy powered apps</p>
+        <div class="zenxy-grid" id="zenxy-grid"></div>
+      </div>
+
+      <!-- Arcade Panel -->
+      <div id="arcade-panel" class="panel">
+        <h2 class="panel-title">🕹️ 3D Arcade</h2>
+        <div class="arcade-grid" id="arcade-grid"></div>
+      </div>
+
+      <!-- Marketplace Panel -->
+      <div id="marketplace-panel" class="panel">
+        <h2 class="panel-title">🛒 Marketplace</h2>
+        <div class="market-grid" id="market-grid"></div>
+      </div>
+    </section>
+
+    <!-- Game Room Screen -->
+    <section id="game-room-screen" class="screen">
+      <div class="room-header">
+        <button class="btn-back" onclick="leaveRoom()">← Leave</button>
+        <div class="room-code" id="room-code">CODE</div>
+        <button class="btn btn-secondary" onclick="copyRoomLink()">📋 Copy Link</button>
+      </div>
+      <div class="room-content" id="room-content"></div>
+    </section>
+  </div>
+
+  <script type="module" src="platform.js"></script>
+</body>
+</html>
+

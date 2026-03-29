@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrickBreaker 3D - Manifold Gaming</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #0a0a1a, #1a0a2a);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    #container { width: 100vw; height: 100vh; position: relative; }
+    canvas { display: block; }
+    
+    #hud {
+      position: absolute; top: 20px; left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px 25px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 170, 0, 0.3);
+    }
+    #hud h2 { color: #ffaa00; margin-bottom: 10px; font-size: 1.2em; }
+    #hud .stat { display: flex; justify-content: space-between; margin: 5px 0; }
+    #hud .stat span:first-child { color: #888; }
+    #hud .stat span:last-child { color: #fff; font-weight: bold; }
+    
+    #drill-viz {
+      position: absolute; bottom: 20px; left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    #drill-viz h3 { color: #00ff88; margin-bottom: 8px; font-size: 0.9em; }
+    .drill-sections { display: flex; gap: 4px; }
+    .drill-section {
+      width: 30px; height: 30px;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: bold;
+      transition: all 0.2s;
+    }
+    .drill-section.turnkey { border: 2px solid #ffaa00; }
+    .drill-section.active { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+
+    #start-screen {
+      position: absolute; inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    #start-screen h1 { color: #ffaa00; font-size: 3em; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 170, 0, 0.5); }
+    #start-screen p { color: #888; margin-bottom: 30px; }
+    #start-screen button {
+      padding: 15px 40px; font-size: 1.2em;
+      background: linear-gradient(135deg, #ffaa00, #ff6600);
+      border: none; border-radius: 8px; cursor: pointer;
+      color: #000; font-weight: bold;
+      transition: transform 0.2s;
+    }
+    #start-screen button:hover { transform: scale(1.05); }
+    
+    #controls-hint {
+      position: absolute; bottom: 20px; right: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 15px; border-radius: 8px;
+      font-size: 0.8em; color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="hud">
+      <h2>◇ Diamond Drill 3D ◇</h2>
+      <div class="stat"><span>Score</span><span id="score">0</span></div>
+      <div class="stat"><span>Level</span><span id="level">1</span></div>
+      <div class="stat"><span>Lives</span><span id="lives">3</span></div>
+      <div class="stat"><span>Bricks</span><span id="bricks">0</span></div>
+    </div>
+    
+    <div id="drill-viz">
+      <h3>◇ Twisted Ribbon State ◇</h3>
+      <div class="drill-sections">
+        <div class="drill-section" style="background: #ff4444;">1</div>
+        <div class="drill-section turnkey" style="background: #ffaa00;">2</div>
+        <div class="drill-section" style="background: #44cc44;">3</div>
+        <div class="drill-section turnkey" style="background: #4488ff;">4</div>
+        <div class="drill-section" style="background: #cc44cc;">5</div>
+        <div class="drill-section turnkey" style="background: #ff8844;">6</div>
+        <div class="drill-section" style="background: #888888;">7</div>
+      </div>
+    </div>
+    
+    <div id="controls-hint">
+      Mouse: Move Paddle | Space: Launch Ball | R: Reset
+    </div>
+    
+    <div id="start-screen">
+      <h1>🧱 BrickBreaker 3D</h1>
+      <p>Saddle Surface Physics on Twisted Ribbon Manifold</p>
+      <button onclick="startGame()">▶ START GAME</button>
+    </div>
+  </div>
+  
+  <script src="brickbreaker3d-game.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,11 @@
+model_dir: "C:\\AI\\tabby-gemma\\model\\tabby-gemma\\"
+
+chat_model:
+  model: "mmproj-model-f16.gguf"
+  context_length: 8192
+  temperature: 0.1
+  top_p: 0.9
+  max_tokens: 2048
+
+server:
+ listen: "127.0.0.1:5300"
