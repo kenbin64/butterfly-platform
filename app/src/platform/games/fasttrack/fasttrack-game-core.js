@@ -1288,11 +1288,16 @@ function executeMove(moveIdx) {
           peg, playerColor: player.color, playerName: player.name, playerId: ci
         }]);
       }
-      // FT landing cutscene — when regular move lands on an FT hole (not bullseye exit pegs)
-      if (getHoleType(move.dest) === 'fasttrack' && !peg.onFasttrack && !peg.mustExitFasttrack) {
-        _deferredCutscenes.push(['fasttrack', {
-          peg, playerColor: player.color, playerName: player.name, playerId: ci
-        }]);
+      // FT landing cutscene — when regular move lands on an FT hole
+      // No fanfare for: bullseye exit pegs, or card 4 (backward — no FT status awarded)
+      {
+        const card = state.deck.get('currentCard');
+        const cardNoFT = card && CARDS[card.value] && CARDS[card.value].noFastTrack;
+        if (getHoleType(move.dest) === 'fasttrack' && !peg.onFasttrack && !peg.mustExitFasttrack && !cardNoFT) {
+          _deferredCutscenes.push(['fasttrack', {
+            peg, playerColor: player.color, playerName: player.name, playerId: ci
+          }]);
+        }
       }
       log(`${getCurrentPlayerName()} moved ${move.steps} to ${move.dest}`);
       break;
