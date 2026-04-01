@@ -90,6 +90,10 @@ function normalizeManifoldState(state) {
         governance: Math.max(0, Math.min(1, state.governance))
     };
 }
+// Round to 10 significant decimal places to eliminate IEEE-754 drift
+function roundManifold(v) {
+    return Math.round(v * 1e10) / 1e10;
+}
 function combineManifoldStates(states) {
     if (states.length === 0)
         return createManifoldState();
@@ -102,7 +106,17 @@ function combineManifoldStates(states) {
         creation: acc.creation + state.creation,
         governance: acc.governance + state.governance
     }));
-    return normalizeManifoldState(combined);
+    // Apply rounding before clamping to eliminate IEEE-754 floating-point drift
+    const rounded = {
+        id: roundManifold(combined.id),
+        relation: roundManifold(combined.relation),
+        geometry: roundManifold(combined.geometry),
+        expression: roundManifold(combined.expression),
+        collapse: roundManifold(combined.collapse),
+        creation: roundManifold(combined.creation),
+        governance: roundManifold(combined.governance)
+    };
+    return normalizeManifoldState(rounded);
 }
 function manifoldStateDistance(a, b) {
     const diff = {

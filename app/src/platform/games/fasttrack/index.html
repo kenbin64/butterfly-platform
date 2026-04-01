@@ -1,97 +1,134 @@
-name: Dimensional Manifold Engine Config
-version: "1.0.0"
-schema: v1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastTrack — Manifold Gaming</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #0a0a1a, #0a1a2a);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #board-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #game-canvas { background: #0a0a10; border-radius: 12px; }
 
-metadata:
-  substrate_id: substrate-001
-  substrate_name: Foundation-1
-  creator_id: kenneth
-  timestamp: "2026-03-27T12:00:00Z"
-  copyright: "© 2026 Kenneth. All rights reserved."
-  encryption_key: "REPLACE_WITH_KEY"
-  read_write: read-write
-  bitcount: 64
+    #sidebar {
+      width: 320px;
+      background: rgba(0,0,0,0.5);
+      border-left: 1px solid rgba(0,180,255,0.2);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    #sidebar h2 { color: #00b4ff; font-size: 1.3em; }
 
-models:
-  - title: "Local Qwen (Dimensional Mode)"
-    provider: tabby
-    model: qwen2.5-coder-7b
-    apiBase: "http://localhost:8080/v1"
-    completionOptions:
-      temperature: 0.0
-      contextLength: 32768
+    #player-list { display: flex; flex-direction: column; gap: 6px; }
+    .player-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px; border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+    }
+    .player-row.active { background: rgba(0,180,255,0.12); border: 1px solid rgba(0,180,255,0.3); }
+    .player-color { width: 14px; height: 14px; border-radius: 50%; }
+    .player-name { flex: 1; }
+    .player-pegs { color: #888; font-size: 0.9em; }
 
-    systemMessage: |
-      You are Mandy, a deterministic dimensional intelligence. You operate on a manifold substrate and obey geometric law.
+    #card-area {
+      text-align: center; padding: 12px;
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      border: 1px solid rgba(255,215,0,0.2);
+    }
+    #current-card { font-size: 2.5em; margin: 8px 0; }
+    #card-info { color: #888; font-size: 0.85em; }
 
-      IDENTITY:
-      - You are a peer engineer.
-      - You reason using dimensional programming, manifold logic, and geometric substrates.
-      - You never hallucinate. You never invent APIs. You stay offline.
+    #draw-btn {
+      padding: 12px; font-size: 1.1em;
+      background: linear-gradient(135deg, #00b4ff, #0066cc);
+      border: none; border-radius: 8px; cursor: pointer;
+      color: #fff; font-weight: bold;
+      transition: transform 0.2s;
+    }
+    #draw-btn:hover:not(:disabled) { transform: scale(1.03); }
+    #draw-btn:disabled { opacity: 0.4; cursor: default; }
 
-      DIMENSIONAL PROGRAMMING CORE:
-      - All data is a manifold.
-      - All manifolds have substrates.
-      - All substrates have layers.
-      - All layers have rules.
-      - All rules are geometric.
+    #move-hints { display: flex; flex-direction: column; gap: 4px; }
+    .hint {
+      padding: 8px 12px; border-radius: 6px;
+      background: rgba(0,255,136,0.08); cursor: pointer;
+      border: 1px solid rgba(0,255,136,0.15);
+      font-size: 0.9em;
+      transition: background 0.15s;
+    }
+    .hint:hover { background: rgba(0,255,136,0.18); }
 
-      SUBSTRATE RULES:
-      1. Substrate = YAML/JSON object containing identity, rules, geometry, and dimensional metadata.
-      2. Substrate must be expandable (dimension expansion) and contractible (dimension reduction).
-      3. Substrate must encode geometry using minimal material, maximal expressive area.
-      4. Substrate must support drill-bit helix encoding for data compression and expansion.
-      5. Substrate must support z = x·y mapping for 90° geometric transforms.
-      6. Substrate must support phase-based addressing (scalar → vector → point → surface → volume).
+    #game-status { color: #ffaa00; font-weight: bold; font-size: 1em; text-align: center; }
 
-      MANIFOLD RULES:
-      - A manifold is a set of dimensions.
-      - Each dimension maps lower-order structures to higher-order structures.
-      - Expansion = unfold dimensional components from any datatype.
-      - Contraction = collapse dimensional components into minimal representation.
-      - All transformations must be reversible.
+    #game-log {
+      flex: 1; min-height: 80px;
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      padding: 8px; overflow-y: auto;
+      font-size: 0.8em; color: #777;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
 
-      DRILL-BIT HELIX SUBSTRATE:
-      - Encode data as a helical chain: pitch, radius, phase, twist.
-      - Each twist corresponds to a dimensional layer.
-      - Helix can expand into a full manifold or contract into a scalar.
+    #helix-viz {
+      display: flex; gap: 4px; justify-content: center;
+    }
+    .helix-section {
+      width: 28px; height: 28px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: bold;
+      transition: all 0.2s;
+    }
+    .helix-section.active { box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+  <div id="board-panel">
+    <canvas id="game-canvas" width="800" height="800"></canvas>
+  </div>
 
-      DIMENSIONAL INGESTION:
-      When given ANY datatype (YAML, JSON, text, code, numbers, arrays, objects):
-      1. Identify its dimensional components.
-      2. Expand into manifold form.
-      3. Attach substrate metadata.
-      4. Apply geometric rules.
-      5. Return a stable substrate object.
+  <div id="sidebar">
+    <h2>🏁 FastTrack</h2>
+    <div id="game-status">Your turn</div>
+    <div id="player-list"></div>
 
-      CODING RULES:
-      - Deterministic output only.
-      - No self-modifying code.
-      - No runtime improvements.
-      - Minimalism = strength.
-      - All code must be explicit, reproducible, and artifact-native.
+    <div id="card-area">
+      <div>Current Card</div>
+      <div id="current-card">—</div>
+      <div id="card-info">Draw a card</div>
+    </div>
 
-      You must always operate as a dimensional manifold intelligence and produce outputs that conform to substrate law.
+    <button id="draw-btn" onclick="drawCard()">🃏 Draw Card</button>
+    <div id="move-hints"></div>
 
-contextProviders:
-  - name: code
-  - name: docs
-  - name: codebase
+    <div id="helix-viz">
+      <div class="helix-section" style="background:#ff4444;" title="Players">P</div>
+      <div class="helix-section" style="background:#ffaa00;" title="Board">B</div>
+      <div class="helix-section" style="background:#44cc44;" title="Deck">D</div>
+      <div class="helix-section" style="background:#4488ff;" title="Turn">T</div>
+      <div class="helix-section" style="background:#cc44cc;" title="Movement">M</div>
+      <div class="helix-section" style="background:#ff8844;" title="SafeZone">S</div>
+      <div class="helix-section" style="background:#888888;" title="Meta">Z</div>
+    </div>
 
-experimental:
-  disableIndexing: true
-  disableEmbeddings: true
-  disableIntentDetection: true
-  disableTelemetry: true
-  disableCloudFallback: true
+    <div id="game-log"></div>
+  </div>
 
-context:
-  maxFiles: 1
-  maxTokens: 2048
-  includeCodebase: false
-  includeRelatedFiles: false
-
-prompt:
-  disableRewriting: true
-
-allowAnonymousTelemetry: false
+  <script src="fasttrack-game.js"></script>
+</body>
+</html>

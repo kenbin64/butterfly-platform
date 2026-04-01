@@ -37,7 +37,7 @@ class ManifoldSupercharger {
                 const features = this.detectFeaturesAt(x, y);
                 // Enhanced saddle with feature awareness
                 const enhancedSaddle = this.enhanceSaddleWithFeatures(saddle, features);
-                this.saddleField.place([x, y], enhancedSaddle);
+                this.saddleField = this.saddleField.place([x, y], enhancedSaddle);
             }
         }
     }

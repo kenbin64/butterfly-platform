@@ -85,14 +85,14 @@ const DEFAULT_CONFIG: SubstrateConfig = {
  * GameSubstrate
  * -------------
  * Manifold-based ECS game engine.
- * 
+ *
  * Coordinates:
  *   drill("entities", "player")                    → entity dimension
  *   drill("entities", "player", "transform", "position") → Vec3
  *   drill("entities", "player", "sprite", "frame") → number
  *   drill("systems", "physics")                    → system config
  *   drill("state", "score")                        → game state value
- * 
+ *
  * Pattern matching for entities:
  *   drill("entities").match(/^enemy_/)             → all enemies
  *   search([/^entities$/, /^.*$/, /^health$/])     → all health components
@@ -191,18 +191,18 @@ export class GameSubstrate extends SimulationSubstrate<GameState> {
   addComponent(entityId: string, componentType: string, data: ComponentData): Dimension {
     const entity = this.entity(entityId);
     const comp = entity.drill(componentType);
-    
+
     // Set component data
     for (const [key, value] of Object.entries(data)) {
       comp.drill(key).value = value;
     }
-    
+
     // Track component on entity
     const components = entity.drill<string[]>("components").value || [];
     if (!components.includes(componentType)) {
       entity.drill("components").value = [...components, componentType];
     }
-    
+
     return comp;
   }
 
@@ -238,11 +238,11 @@ export class GameSubstrate extends SimulationSubstrate<GameState> {
   /** Tick - advance game simulation */
   tick(dt: number): void {
     if (this.drill<boolean>("state", "paused").value) return;
-    
+
     const time = this.drill<number>("state", "time").value || 0;
     this.drill("state", "time").value = time + dt;
     this.drill("state", "deltaTime").value = dt;
-    
+
     // Systems would process here based on registered system coordinates
   }
 
@@ -307,21 +307,33 @@ export class GameSubstrate extends SimulationSubstrate<GameState> {
     return this.drill("sync", "philosophers", `p_${index}`);
   }
 
-  /** Try to acquire forks and eat - returns true if philosopher can eat */
+  /** Try to acquire forks and eat - returns true if philosopher can eat.
+   *
+   * Fork model (dimensional, not hierarchical):
+   *   Each philosopher i "owns" their right fork → philosopher(i).fork_right
+   *   This fork is shared with philosopher(i+1) as their LEFT fork.
+   *
+   *   To eat, philosopher i needs:
+   *     LEFT fork  = philosopher( (i-1+N)%N ).fork_right  (neighbour on left owns it)
+   *     RIGHT fork = philosopher( i ).fork_right           (own right fork)
+   *
+   *   Acquiring both blocks both adjacent neighbours simultaneously.
+   */
   tryEat(index: number): boolean {
     const count = this.drill<number>("sync", "count").value || 0;
-    const leftIndex = index;
-    const rightIndex = (index + 1) % count;
+    if (count === 0) return false;
 
-    const self = this.philosopher(index);
-    const leftFork = this.philosopher(leftIndex).drill<boolean>("fork_right");
-    const rightFork = this.philosopher(rightIndex).drill<boolean>("fork_left");
+    // Left fork: owned by the left neighbour (between left-neighbour and index)
+    const leftNeighbor = (index - 1 + count) % count;
+    const leftFork = this.philosopher(leftNeighbor).drill<boolean>("fork_right");
+    // Right fork: owned by index (between index and right-neighbour)
+    const rightFork = this.philosopher(index).drill<boolean>("fork_right");
 
-    // Check if both forks available - drill, don't compute
+    // Check if both forks available — drill, don't compute
     if (leftFork.value && rightFork.value) {
-      // Acquire forks
       leftFork.value = false;
       rightFork.value = false;
+      const self = this.philosopher(index);
       self.drill("eating").value = true;
       self.drill("thinking").value = false;
       return true;
@@ -332,16 +344,15 @@ export class GameSubstrate extends SimulationSubstrate<GameState> {
   /** Release forks after eating */
   finishEating(index: number): void {
     const count = this.drill<number>("sync", "count").value || 0;
-    const leftIndex = index;
-    const rightIndex = (index + 1) % count;
+    if (count === 0) return;
 
-    const self = this.philosopher(index);
-    const leftFork = this.philosopher(leftIndex).drill<boolean>("fork_right");
-    const rightFork = this.philosopher(rightIndex).drill<boolean>("fork_left");
+    const leftNeighbor = (index - 1 + count) % count;
+    const leftFork = this.philosopher(leftNeighbor).drill<boolean>("fork_right");
+    const rightFork = this.philosopher(index).drill<boolean>("fork_right");
 
-    // Release forks
     leftFork.value = true;
     rightFork.value = true;
+    const self = this.philosopher(index);
     self.drill("eating").value = false;
     self.drill("thinking").value = true;
   }

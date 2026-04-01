@@ -4,6 +4,8 @@ module.exports = {
     "**/tests/**/*.test.ts",
     "**/tests/**/*.test.js"
   ],
+  // Prefer TypeScript sources over stale compiled .js artifacts
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
@@ -17,8 +19,9 @@ module.exports = {
   verbose: true,
   globals: {
     "ts-jest": {
-      tsconfig: "../tsconfig.json"
+      tsconfig: "./tsconfig.json"
     }
   },
+  setupFiles: ["<rootDir>/tests/polyfills.js"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"]
 };

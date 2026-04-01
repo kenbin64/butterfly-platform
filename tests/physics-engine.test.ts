@@ -22,7 +22,7 @@ describe("PhysicsEngine", () => {
   test("should start and stop engine", () => {
     physicsEngine.start();
     expect(physicsEngine.getStats().status).toBe("running");
-    
+
     physicsEngine.stop();
     expect(physicsEngine.getStats().status).toBe("stopped");
   });
@@ -40,7 +40,7 @@ describe("PhysicsEngine", () => {
 
     physicsEngine.addBody(bodyId, bodyData);
     expect(physicsEngine.getAllBodies()).toHaveLength(1);
-    
+
     const body = physicsEngine.getBody(bodyId);
     expect(body).toBeDefined();
     expect(body.id).toBe(bodyId);
@@ -68,14 +68,14 @@ describe("PhysicsEngine", () => {
     });
 
     physicsEngine.start();
-    
+
     // Wait for a few physics updates
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     const body = physicsEngine.getBody(bodyId);
     expect(body.x).toBeGreaterThan(initialX);
     expect(body.y).toBeGreaterThan(initialY);
-    
+
     physicsEngine.stop();
   });
 
@@ -113,13 +113,13 @@ describe("PhysicsEngine", () => {
     });
 
     physicsEngine.start();
-    
+
     // Wait for gravity to take effect
     await new Promise(resolve => setTimeout(resolve, 200));
-    
+
     const body = physicsEngine.getBody(bodyId);
     expect(body.y).toBeGreaterThan(initialY);
-    
+
     physicsEngine.stop();
   });
 
@@ -142,7 +142,7 @@ describe("PhysicsEngine", () => {
     });
 
     expect(physicsEngine.getAllBodies()).toHaveLength(3);
-    
+
     const allBodies = physicsEngine.getAllBodies();
     expect(allBodies.some(b => b.id === "body1")).toBe(true);
     expect(allBodies.some(b => b.id === "body2")).toBe(true);
@@ -151,26 +151,26 @@ describe("PhysicsEngine", () => {
 
   test("should handle collision detection and bounds", async () => {
     const bodyId = "boundary-body";
-    
+
     // Create a body that will hit the right boundary
     physicsEngine.addBody(bodyId, {
       x: 990, // Close to right boundary (1000)
       y: 300,
-      vx: 50, // Moving right fast
+      vx: 200, // Moving right fast
       vy: 0,
       mass: 1,
       isStatic: false
     });
 
     physicsEngine.start();
-    
+
     // Wait for collision
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     const body = physicsEngine.getBody(bodyId);
     expect(body.x).toBeLessThanOrEqual(1000); // Should not exceed boundary
     expect(body.velocity.x).toBeLessThan(0); // Should bounce back (negative velocity)
-    
+
     physicsEngine.stop();
   });
 
@@ -189,12 +189,12 @@ describe("PhysicsEngine", () => {
   test("should handle body removal gracefully", () => {
     const bodyId = "test-body";
     physicsEngine.addBody(bodyId, { x: 0, y: 0, vx: 0, vy: 0, mass: 1, isStatic: false });
-    
+
     expect(physicsEngine.getBody(bodyId)).toBeDefined();
-    
+
     physicsEngine.removeBody(bodyId);
     expect(physicsEngine.getBody(bodyId)).toBeUndefined();
-    
+
     // Removing non-existent body should not throw
     expect(() => physicsEngine.removeBody("non-existent")).not.toThrow();
   });

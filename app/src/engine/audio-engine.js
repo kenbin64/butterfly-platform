@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioEngine = void 0;
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // Audio engine using manifold-based sound synthesis
 class AudioEngine {
     constructor() {
@@ -13,7 +13,12 @@ class AudioEngine {
     }
     initializeAudioContext() {
         // Manifold-based audio context creation
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            const AudioCtx = (typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext)) || null;
+            this.audioContext = AudioCtx ? new AudioCtx() : {};
+        } catch {
+            this.audioContext = {};
+        }
     }
     initializeStore() {
         // Create audio entity store
@@ -23,7 +28,7 @@ class AudioEngine {
         this.audioStore.set("tempo", { bpm: 120 });
     }
     initializeDimensionalState() {
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         this.dimensionalState.drill("audio", "status").value = "initialized";
         this.dimensionalState.drill("audio", "trackCount").value = 0;
         this.dimensionalState.drill("audio", "playing").value = false;

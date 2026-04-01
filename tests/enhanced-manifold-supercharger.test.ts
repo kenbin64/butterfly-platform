@@ -1,3 +1,4 @@
+// Use Jest globals (describe, test, beforeEach, expect) — do NOT import from "node:test"
 import { ManifoldSupercharger } from "../core/enhanced/manifold-supercharger";
 import { SaddleForm } from "../core/geometry/saddle";
 import { SaddleField } from "../core/substrate/saddlefield";
@@ -21,7 +22,7 @@ describe("Enhanced Manifold Supercharger", () => {
   test("should optimize level between 1 and 5", () => {
     supercharger.optimizeLevel(1);
     expect(supercharger.getStats().optimizationLevel).toBe(1);
-    
+
     supercharger.optimizeLevel(5);
     expect(supercharger.getStats().optimizationLevel).toBe(5);
   });
@@ -29,7 +30,7 @@ describe("Enhanced Manifold Supercharger", () => {
   test("should create enhanced saddle forms with feature awareness", () => {
     const field = supercharger.getEnhancedField();
     const cells = field.cells;
-    
+
     // Check that enhanced saddles have different orientations
     const orientations = cells.map(cell => cell.form.orientation);
     expect(orientations.some(orientation => orientation !== 0)).toBe(true);
@@ -46,7 +47,7 @@ describe("Enhanced Manifold Supercharger", () => {
     const cell = field.cells[0];
     const position = cell.position;
     const form = cell.form;
-    
+
     const value = form.valueAt(position[0], position[1]);
     expect(typeof value).toBe("number");
   });

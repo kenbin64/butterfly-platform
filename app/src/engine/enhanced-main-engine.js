@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnhancedMainEngine = void 0;
-const manifold_supercharger_1 = require("../../core/enhanced/manifold-supercharger");
-const dimensional_1 = require("../../core/dimensional");
+const manifold_supercharger_1 = require("../../../core/enhanced/manifold-supercharger");
+const dimensional_1 = require("../../../core/dimensional");
 // Enhanced main engine with supercharged manifold capabilities
 class EnhancedMainEngine {
     constructor() {
@@ -27,7 +27,7 @@ class EnhancedMainEngine {
     }
     initializeDimensionalState() {
         // Enhanced dimensional state with manifold optimization
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         // Manifold-based enhanced state structure
         this.dimensionalState.drill("engine", "status").value = "initialized";
         this.dimensionalState.drill("engine", "frame").value = 0;
@@ -238,7 +238,13 @@ class EnhancedMainEngine {
             frameTime: this.dimensionalState.drill("engine", "frameTime").value,
             optimizationLevel: this.dimensionalState.drill("engine", "optimizationLevel").value,
             saddleCells: this.dimensionalState.drill("engine", "saddleCells").value,
-            superchargerStats: this.supercharger.getStats()
+            superchargerStats: this.supercharger.getStats(),
+            engines: {
+                enhancedMain: {
+                    status: this.dimensionalState.drill("engine", "status").value,
+                    optimizationLevel: this.dimensionalState.drill("engine", "optimizationLevel").value
+                }
+            }
         };
     }
     setOptimizationLevel(level) {

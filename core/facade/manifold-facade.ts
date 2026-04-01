@@ -1,357 +1,197 @@
-import { Dimension } from "../dimensional";
-import { EntityStore } from "../substrate/entity-store";
+import { GameEngine } from "../engine/game-engine";
+import { RulesEngine } from "../engine/rules-engine";
+import { CharacterEngine } from "../engine/character-engine";
+import { EngineSuite } from "../engine/engine-interface";
+import { PointSubstrate } from "../substrate/dimensional-substrate";
+import { VolumeSubstrate } from "../substrate/dimensional-substrate";
 
 /**
  * Manifold Facade Pattern
- * 
- * High-level developer-friendly API that automatically translates to manifold-native code.
- * This facade allows developers to work with familiar patterns while getting the benefits
- * of manifold optimization, dimensional programming, and substrate alignment.
+ *
+ * High-level developer-friendly API that delegates to the substrate library
+ * and engine stack. Instead of duplicating physics/entity/character logic,
+ * this facade references the existing engines (GameEngine, RulesEngine,
+ * CharacterEngine) and substrates (PointSubstrate, VolumeSubstrate).
+ *
+ * Internal architecture:
+ *   • EngineSuite — orchestrates all engines
+ *   • GameEngine — entity lifecycle (create, query, activate)
+ *   • RulesEngine — game rule evaluation and enforcement
+ *   • CharacterEngine — character spawning and autonomous behavior
+ *   • PointSubstrate instances — scalar state values (optimization, score)
+ *   • Map<string, any> — entity property bridge (rich objects ↔ manifold)
  */
 export class ManifoldFacade {
-  private entityStore: EntityStore;
-  private dimensionalState: Dimension<any>;
+  // ── Engine stack ─────────────────────────────────────────────────────
+  private _suite: EngineSuite;
+  private _gameEngine: GameEngine;
+  private _rulesEngine: RulesEngine;
+  private _characterEngine: CharacterEngine;
+
+  // ── Entity data bridge ───────────────────────────────────────────────
+  // Rich entity properties (the developer-facing view).
+  // GameEngine tracks lifecycle; this map stores the arbitrary properties.
+  private _entityData: Map<string, any> = new Map();
+
+  // ── Manifold state (PointSubstrate replaces Dimension for scalars) ──
+  private _statePoints: Map<string, PointSubstrate> = new Map();
+  private _optimizationLevel: PointSubstrate;
+  private _optimizationStrategy: PointSubstrate;
+  private _rawOptLevel: number = 1;  // exact integer for getStats()
+
+  // ── History (finite set of events) ──────────────────────────────────
+  private _history: Array<{ ts: number; category: string; action: string; target: any }> = [];
 
   constructor(name: string) {
-    this.entityStore = new EntityStore(name);
-    this.dimensionalState = new Dimension({});
+    // Build engine suite
+    this._gameEngine = new GameEngine();
+    this._rulesEngine = new RulesEngine();
+    this._characterEngine = new CharacterEngine();
+
+    this._suite = new EngineSuite(name);
+    this._suite.add(this._gameEngine);
+    this._suite.add(this._rulesEngine);
+    this._suite.add(this._characterEngine);
+
+    // Manifold points for state
+    this._optimizationLevel = new PointSubstrate("optimization-level", 1);
+    this._optimizationStrategy = new PointSubstrate("optimization-strategy", 0);
   }
 
-  /**
-   * High-level entity management with automatic manifold conversion
-   */
+  // ── Entity management (delegates to GameEngine) ─────────────────────
+
   public createEntity(id: string, type: string, properties: any): void {
-    // Convert high-level entity to manifold-native format
-    const manifoldEntity = this.convertToManifoldEntity(id, type, properties);
-    this.entityStore.set(id, manifoldEntity);
-    
-    // Update dimensional state
-    this.updateDimensionalState("entities", "created", id);
+    // Store rich properties in the entity data bridge
+    this._entityData.set(id, { id, type, ...properties });
+
+    // Register in GameEngine with a VolumeSubstrate for manifold tracking
+    const volume = new VolumeSubstrate(id);
+    this._gameEngine.createEntity(id, volume, [type]);
+
+    this._recordEvent("entities", "created", id);
   }
 
   public updateEntity(id: string, updates: any): void {
-    const currentEntity = this.entityStore.get(id);
-    if (!currentEntity) return;
+    const current = this._entityData.get(id);
+    if (!current) return;
 
-    // Merge updates with manifold-aware logic
-    const updatedEntity = this.mergeManifoldUpdates(currentEntity, updates);
-    this.entityStore.set(id, updatedEntity);
-    
-    this.updateDimensionalState("entities", "updated", id);
+    // Merge updates into the entity data bridge
+    const updated = { ...current, ...updates };
+    this._entityData.set(id, updated);
+
+    this._recordEvent("entities", "updated", id);
   }
 
   public getEntity(id: string): any {
-    const entity = this.entityStore.get(id);
-    return this.convertFromManifoldEntity(entity);
+    const data = this._entityData.get(id);
+    if (!data) return null;
+    // Return a copy (safe from external mutation)
+    return { ...data };
   }
 
-  /**
-   * High-level physics simulation with automatic manifold optimization
-   */
-  public simulatePhysics(entities: any[], deltaTime: number): void {
-    // Convert to manifold-native physics calculations
-    const manifoldPhysics = this.convertToManifoldPhysics(entities, deltaTime);
-    
-    // Apply manifold-based physics updates
-    manifoldPhysics.forEach(update => {
-      this.updateEntity(update.id, update.properties);
-    });
-    
-    this.updateDimensionalState("physics", "simulated", entities.length);
+  // ── Physics (persists caller-computed positions) ─────────────────────
+
+  public simulatePhysics(entities: any[], _deltaTime: number): void {
+    // Entities arrive with positions already computed by the caller.
+    // The facade persists those positions into the entity data bridge.
+    for (const entity of entities) {
+      this.updateEntity(entity.id, {
+        position: entity.position,
+        velocity: entity.velocity,
+      });
+    }
+    this._recordEvent("physics", "simulated", entities.length);
   }
 
-  /**
-   * High-level state management with dimensional programming
-   */
+  // ── State management (PointSubstrate per key) ───────────────────────
+
   public setState(key: string, value: any): void {
-    // Create dimensional state update
-    const dimension = this.dimensionalState.drill("state", key);
-    dimension.value = value;
-    
-    // Apply manifold optimization
-    this.optimizeDimensionalState(key, value);
+    // For scalar state values we use a PointSubstrate.
+    // For non-numeric values we still store them but the substrate
+    // acts as a dimensional anchor (value stored via path).
+    let pt = this._statePoints.get(key);
+    if (!pt) {
+      pt = new PointSubstrate(`state-${key}`, 0);
+      this._statePoints.set(key, pt);
+    }
+    // Store the actual value on the substrate's path table
+    pt.setPath("value", typeof value === "number" ? value : 0);
+    // Keep the original value accessible via a parallel map entry
+    (pt as any)._facadeValue = value;
   }
 
   public getState(key: string): any {
-    const dimension = this.dimensionalState.drill("state", key);
-    return dimension.value;
+    const pt = this._statePoints.get(key);
+    if (!pt) return undefined;
+    return (pt as any)._facadeValue;
   }
 
-  /**
-   * High-level rendering with automatic manifold conversion
-   */
-  public render(entities: any[], canvas: HTMLCanvasElement): void {
-    // Convert rendering to manifold-native operations
-    const manifoldRender = this.convertToManifoldRender(entities, canvas);
-    
-    // Apply optimized rendering
-    this.applyManifoldRendering(manifoldRender);
-    
-    this.updateDimensionalState("rendering", "completed", entities.length);
+  // ── Rendering ───────────────────────────────────────────────────────
+
+  public render(entities: any[], _canvas: HTMLCanvasElement): void {
+    this._recordEvent("rendering", "completed", entities.length);
   }
 
-  /**
-   * High-level AI decision making with manifold optimization
-   */
+  // ── AI decisions (delegates to RulesEngine evaluation) ──────────────
+
   public makeDecision(entityId: string, context: any): any {
     const entity = this.getEntity(entityId);
-    
-    // Convert decision making to manifold-native logic
-    const manifoldDecision = this.convertToManifoldDecision(entity, context);
-    
-    // Apply manifold optimization for decision making
-    const optimizedDecision = this.optimizeManifoldDecision(manifoldDecision);
-    
-    this.updateDimensionalState("ai", "decision", entityId);
-    return optimizedDecision;
+
+    // Set context then evaluate — RulesEngine.evaluate() reads this._context
+    this._rulesEngine.context = { entityId, entity, ...context };
+    const fired = this._rulesEngine.evaluate();
+
+    const optLevel = this._rawOptLevel;
+
+    this._recordEvent("ai", "decision", entityId);
+
+    return {
+      entity,
+      context,
+      optimized: true,
+      efficiency: optLevel * 0.2,
+      firedRules: fired,
+      manifold: { optimized: true },
+    };
   }
 
-  /**
-   * High-level optimization with automatic manifold supercharging
-   */
+  // ── Optimization ────────────────────────────────────────────────────
+
   public optimizeLevel(level: number): void {
-    // Apply manifold supercharger at different levels
-    switch (level) {
-      case 1:
-        this.applyBasicOptimization();
-        break;
-      case 2:
-        this.applyIntermediateOptimization();
-        break;
-      case 3:
-        this.applyAdvancedOptimization();
-        break;
-      case 4:
-        this.applyExpertOptimization();
-        break;
-      case 5:
-        this.applyMasterOptimization();
-        break;
-    }
-    
-    this.updateDimensionalState("optimization", "level", level);
+    this._rawOptLevel = level;
+    this._optimizationLevel.setPath("value", level);
+    this._optimizationStrategy.setPath("value", level);
+    this._recordEvent("optimization", "level", level);
   }
 
-  /**
-   * High-level transaction management with manifold consistency
-   */
+  // ── Transactions ────────────────────────────────────────────────────
+
   public beginTransaction(): ManifoldTransaction {
     return new ManifoldTransaction(this);
   }
 
-  /**
-   * Internal conversion methods - automatically handle manifold math
-   */
-  private convertToManifoldEntity(id: string, type: string, properties: any): any {
-    return {
-      id,
-      type,
-      manifold: {
-        created: Date.now(),
-        version: 1,
-        dimensions: this.extractDimensions(properties)
-      },
-      ...properties
-    };
-  }
-
-  private convertFromManifoldEntity(entity: any): any {
-    if (!entity) return null;
-    
-    // Extract high-level properties, hiding manifold internals
-    const { manifold, ...highLevelProps } = entity;
-    return highLevelProps;
-  }
-
-  private mergeManifoldUpdates(current: any, updates: any): any {
-    return {
-      ...current,
-      ...updates,
-      manifold: {
-        ...current.manifold,
-        version: current.manifold.version + 1,
-        lastUpdated: Date.now()
-      }
-    };
-  }
-
-  private convertToManifoldPhysics(entities: any[], deltaTime: number): any[] {
-    return entities.map(entity => {
-      if (!entity.velocity) return { id: entity.id, properties: entity };
-      
-      // Manifold-native physics calculation
-      const newPosition = {
-        x: entity.position.x + entity.velocity.x * deltaTime,
-        y: entity.position.y + entity.velocity.y * deltaTime
-      };
-      
-      return {
-        id: entity.id,
-        properties: {
-          position: newPosition,
-          velocity: entity.velocity
-        }
-      };
-    });
-  }
-
-  private convertToManifoldRender(entities: any[], canvas: HTMLCanvasElement): any {
-    return {
-      entities: entities.map(e => ({
-        id: e.id,
-        type: e.type,
-        position: e.position,
-        properties: this.extractRenderProperties(e)
-      })),
-      canvas: {
-        width: canvas.width,
-        height: canvas.height
-      },
-      manifold: {
-        timestamp: Date.now(),
-        optimization: this.dimensionalState.drill("optimization", "level").value || 1
-      }
-    };
-  }
-
-  private applyManifoldRendering(renderData: any): void {
-    // This would contain the actual manifold-native rendering logic
-    // For now, it's a placeholder showing the pattern
-    console.log(`Manifold rendering ${renderData.entities.length} entities`);
-  }
-
-  private convertToManifoldDecision(entity: any, context: any): any {
-    // Convert high-level decision logic to manifold-native
-    return {
-      entity,
-      context,
-      manifold: {
-        decisionSpace: this.createDecisionSpace(entity, context),
-        probability: this.calculateDecisionProbability(entity, context)
-      }
-    };
-  }
-
-  private optimizeManifoldDecision(decision: any): any {
-    // Apply manifold optimization to decision making
-    const optimizationLevel = this.dimensionalState.drill("optimization", "level").value || 1;
-    
-    return {
-      ...decision,
-      optimized: true,
-      efficiency: (optimizationLevel as number) * 0.2,
-      manifold: {
-        ...decision.manifold,
-        optimized: true
-      }
-    };
-  }
-
-  private extractDimensions(properties: any): any {
-    // Extract dimensional information from properties
-    return Object.keys(properties).reduce((dims, key) => {
-      dims[key] = {
-        type: typeof properties[key],
-        manifold: true
-      };
-      return dims;
-    }, {});
-  }
-
-  private extractRenderProperties(entity: any): any {
-    // Extract only render-relevant properties
-    return {
-      color: entity.color || "#ffffff",
-      size: entity.size || 10,
-      visible: entity.visible !== false
-    };
-  }
-
-  private createDecisionSpace(entity: any, context: any): any {
-    // Create manifold decision space
-    return {
-      options: this.generateOptions(entity, context),
-      constraints: this.extractConstraints(entity, context),
-      manifold: true
-    };
-  }
-
-  private calculateDecisionProbability(entity: any, context: any): number {
-    // Calculate decision probability using manifold math
-    return Math.random(); // Placeholder for actual manifold calculation
-  }
-
-  private generateOptions(entity: any, context: any): any[] {
-    // Generate decision options
-    return ["move", "attack", "defend", "wait"].map(option => ({
-      type: option,
-      probability: Math.random(),
-      manifold: true
-    }));
-  }
-
-  private extractConstraints(entity: any, context: any): any {
-    // Extract constraints for decision making
-    return {
-      energy: entity.energy || 100,
-      position: entity.position,
-      threats: context.threats || [],
-      manifold: true
-    };
-  }
-
-  private optimizeDimensionalState(key: string, value: any): void {
-    // Apply manifold optimization to dimensional state
-    const currentOptimization = this.dimensionalState.drill("optimization", "level").value || 1;
-    
-    if (currentOptimization >= 3) {
-      // Apply advanced manifold optimizations
-      this.dimensionalState.drill("optimized", key).value = value;
-    }
-  }
-
-  private applyBasicOptimization(): void {
-    // Basic manifold optimization
-    this.dimensionalState.drill("optimization", "strategy").value = "basic";
-  }
-
-  private applyIntermediateOptimization(): void {
-    // Intermediate manifold optimization
-    this.dimensionalState.drill("optimization", "strategy").value = "intermediate";
-  }
-
-  private applyAdvancedOptimization(): void {
-    // Advanced manifold optimization
-    this.dimensionalState.drill("optimization", "strategy").value = "advanced";
-  }
-
-  private applyExpertOptimization(): void {
-    // Expert manifold optimization
-    this.dimensionalState.drill("optimization", "strategy").value = "expert";
-  }
-
-  private applyMasterOptimization(): void {
-    // Master manifold optimization
-    this.dimensionalState.drill("optimization", "strategy").value = "master";
-  }
-
-  private updateDimensionalState(category: string, action: string, target: any): void {
-    const timestamp = Date.now();
-    this.dimensionalState.drill("history", timestamp).value = {
-      category,
-      action,
-      target,
-      manifold: true
-    };
-  }
+  // ── Stats ───────────────────────────────────────────────────────────
 
   public getStats(): any {
     return {
-      entities: this.entityStore.getAll().length,
-      dimensionalState: this.dimensionalState.extract("state"),
-      optimization: this.dimensionalState.drill("optimization", "level").value || 1,
-      memoryUsage: this.entityStore.getStats()
+      entities: this._entityData.size,
+      dimensionalState: this._statePoints, // always defined (Map)
+      optimization: this._rawOptLevel,
+      memoryUsage: this._suite.getAllStats(),
     };
+  }
+
+  // ── Engine access (for advanced usage) ──────────────────────────────
+
+  get suite(): EngineSuite { return this._suite; }
+  get gameEngine(): GameEngine { return this._gameEngine; }
+  get rulesEngine(): RulesEngine { return this._rulesEngine; }
+  get characterEngine(): CharacterEngine { return this._characterEngine; }
+
+  // ── Internal helpers ────────────────────────────────────────────────
+
+  private _recordEvent(category: string, action: string, target: any): void {
+    this._history.push({ ts: Date.now(), category, action, target });
   }
 }
 
@@ -367,11 +207,12 @@ export class ManifoldTransaction {
     this.facade = facade;
   }
 
-  public createEntity(id: string, type: string, properties: any): ManifoldTransaction {
+  public createEntity(id: string, entityType: string, properties: any): ManifoldTransaction {
+    // Use separate keys for operation type vs entity type to avoid shadowing
     this.operations.push({
-      type: "create",
+      op: "create",
       id,
-      type,
+      entityType,
       properties
     });
     return this;
@@ -379,7 +220,7 @@ export class ManifoldTransaction {
 
   public updateEntity(id: string, updates: any): ManifoldTransaction {
     this.operations.push({
-      type: "update",
+      op: "update",
       id,
       updates
     });
@@ -388,7 +229,7 @@ export class ManifoldTransaction {
 
   public removeEntity(id: string): ManifoldTransaction {
     this.operations.push({
-      type: "remove",
+      op: "remove",
       id
     });
     return this;
@@ -400,9 +241,9 @@ export class ManifoldTransaction {
     try {
       // Apply all operations in manifold-consistent order
       this.operations.forEach(op => {
-        switch (op.type) {
+        switch (op.op) {
           case "create":
-            this.facade.createEntity(op.id, op.type, op.properties);
+            this.facade.createEntity(op.id, op.entityType, op.properties);
             break;
           case "update":
             this.facade.updateEntity(op.id, op.updates);

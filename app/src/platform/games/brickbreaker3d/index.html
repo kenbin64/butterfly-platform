@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BrickBreaker 3D - Manifold Gaming</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../../lib/three/three.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -15,7 +15,7 @@
     }
     #container { width: 100vw; height: 100vh; position: relative; }
     canvas { display: block; }
-    
+
     #hud {
       position: absolute; top: 20px; left: 20px;
       background: rgba(0, 0, 0, 0.6);
@@ -27,7 +27,7 @@
     #hud .stat { display: flex; justify-content: space-between; margin: 5px 0; }
     #hud .stat span:first-child { color: #888; }
     #hud .stat span:last-child { color: #fff; font-weight: bold; }
-    
+
     #drill-viz {
       position: absolute; bottom: 20px; left: 20px;
       background: rgba(0, 0, 0, 0.6);
@@ -64,7 +64,7 @@
       transition: transform 0.2s;
     }
     #start-screen button:hover { transform: scale(1.05); }
-    
+
     #controls-hint {
       position: absolute; bottom: 20px; right: 20px;
       background: rgba(0, 0, 0, 0.6);
@@ -76,15 +76,15 @@
 <body>
   <div id="container">
     <div id="hud">
-      <h2>◇ Diamond Drill 3D ◇</h2>
+      <h2>◇ BrickBreaker 3D ◇</h2>
       <div class="stat"><span>Score</span><span id="score">0</span></div>
       <div class="stat"><span>Level</span><span id="level">1</span></div>
       <div class="stat"><span>Lives</span><span id="lives">3</span></div>
       <div class="stat"><span>Bricks</span><span id="bricks">0</span></div>
     </div>
-    
+
     <div id="drill-viz">
-      <h3>◇ Twisted Ribbon State ◇</h3>
+      <h3>◇ Manifold Helix State ◇</h3>
       <div class="drill-sections">
         <div class="drill-section" style="background: #ff4444;">1</div>
         <div class="drill-section turnkey" style="background: #ffaa00;">2</div>
@@ -95,18 +95,18 @@
         <div class="drill-section" style="background: #888888;">7</div>
       </div>
     </div>
-    
+
     <div id="controls-hint">
       Mouse: Move Paddle | Space: Launch Ball | R: Reset
     </div>
-    
+
     <div id="start-screen">
       <h1>🧱 BrickBreaker 3D</h1>
-      <p>Saddle Surface Physics on Twisted Ribbon Manifold</p>
+      <p>Saddle Surface Physics — z = x·y Manifold</p>
       <button onclick="startGame()">▶ START GAME</button>
     </div>
   </div>
-  
+
   <script src="brickbreaker3d-game.js"></script>
 </body>
 </html>

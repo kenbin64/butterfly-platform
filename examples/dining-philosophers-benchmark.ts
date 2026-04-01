@@ -21,15 +21,15 @@ interface BenchmarkResult {
 function benchmark(name: string, iterations: number, fn: () => void): BenchmarkResult {
   // Warm up
   for (let i = 0; i < 100; i++) fn();
-  
+
   const start = performance.now();
   for (let i = 0; i < iterations; i++) fn();
   const end = performance.now();
-  
+
   const totalMs = end - start;
   const avgNs = (totalMs * 1_000_000) / iterations;
   const opsPerSec = Math.round(iterations / (totalMs / 1000));
-  
+
   return { name, iterations, totalMs, avgNs, opsPerSec };
 }
 
@@ -238,8 +238,8 @@ console.log(`    Phase:     ${playerWave.phase}° (wave position)`);
 
 // Sample wave across multiple entities
 console.log("\n  Wave sampling across entities:");
-const samples = waveGame.sampleWave(["entities"], ["player", "enemy_1", "enemy_2"]);
-samples.forEach(s => {
+const waveSamples = waveGame.sampleWave(["entities"], ["player", "enemy_1", "enemy_2"]);
+waveSamples.forEach(s => {
   console.log(`    ${s.key}: amplitude=${s.amplitude}, phase=${s.phase}°`);
 });
 
@@ -404,7 +404,7 @@ console.log(`    Sections: [${diamondDrill.decode().join(", ")}]`);
 
 // Sample across the entire drill
 console.log("\n  Waveform samples (θ = 0 to 7):");
-const samples = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5];
+const diamondSamples = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5];
 for (let i = 0; i < 7; i++) {
   const pinch = diamondDrill.sample(i);
   const fat = diamondDrill.sample(i + 0.5);
@@ -431,6 +431,139 @@ console.log(`\n  Diamond sample: ${diamondBench.avgNs.toFixed(2)} ns/op (${diamo
 diamondDrill.rotate(45);
 console.log(`\n  After 45° rotation: ${diamondDrill.rotation}°`);
 console.log(`    Sample at θ=3.5 now: ${diamondDrill.sample(3.5).toFixed(2)}`);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BENCHMARK 12: BASE-SUBSTRATE HELIX + WAVEFORM ENCODING
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log("\n─── 12. HELIX WAVEFORM: Manifold Encode/Decode vs Traditional ──────\n");
+
+// Substrate used for waveform ops (GameSubstrate extends BaseSubstrate)
+const wfGame = GameSubstrate.create();
+
+// Payload representative of real-world data (a small JSON object)
+const testPayload = {
+  philosopher: 3,
+  state: "eating",
+  forkLeft: false,
+  forkRight: false,
+  roundsCompleted: 42,
+};
+const payloadStr = JSON.stringify(testPayload);
+
+// ── 12a. encodeToWaveform  vs  JSON.stringify ────────────────────────────
+const WF_ITER = 50_000;
+
+const manifoldEncode = benchmark("BaseSubstrate.encodeToWaveform(obj)", WF_ITER, () => {
+  wfGame.encodeToWaveform(testPayload);
+});
+
+const jsonStringify = benchmark("JSON.stringify(obj)", WF_ITER, () => {
+  JSON.stringify(testPayload);
+});
+
+printResult(manifoldEncode);
+printResult(jsonStringify);
+console.log(`  → encodeToWaveform is ${(jsonStringify.avgNs / manifoldEncode.avgNs).toFixed(2)}x vs JSON.stringify\n`);
+
+// Pre-encode once so readManifold / materialiseJSON have data to work with
+const enc12 = wfGame.encodeToWaveform(testPayload);
+const rawBytes  = new TextEncoder().encode(payloadStr).length;
+const wfBytes   = enc12.yValues.byteLength;  // Float64Array — one f64 per byte
+console.log(`  Storage comparison (raw JSON vs manifold y-coordinates):`);
+console.log(`    Raw JSON bytes:        ${rawBytes} bytes`);
+console.log(`    Manifold y-coords:     ${enc12.yValues.length} coords × 8 bytes = ${wfBytes} bytes`);
+console.log(`    Ratio:                 ${(wfBytes / rawBytes).toFixed(2)}× (Float64 per byte — lossless geometry)\n`);
+
+// ── 12b. readManifold (single z=x*y surface read) vs plain multiplication ─
+const manifoldRead = benchmark("BaseSubstrate.readManifold(x, y, section)", WF_ITER, () => {
+  wfGame.readManifold(3.5, 0.72, 2);
+});
+
+const plainMultiply = benchmark("Traditional: x * y (plain multiplication)", WF_ITER, () => {
+  3.5 * 0.72; // eslint-disable-line no-unused-expressions
+});
+
+printResult(manifoldRead);
+printResult(plainMultiply);
+console.log(`  → readManifold overhead vs raw multiply: ${(manifoldRead.avgNs / plainMultiply.avgNs).toFixed(2)}x\n`);
+
+// ── 12c. verifyWaveform vs JSON.parse+compare (integrity check) ──────────
+const manifoldVerify = benchmark("BaseSubstrate.verifyWaveform() (checksum)", WF_ITER, () => {
+  wfGame.verifyWaveform();
+});
+
+const jsonRoundtrip = benchmark("JSON.parse(JSON.stringify(obj)) + compare", WF_ITER, () => {
+  const rt = JSON.parse(payloadStr);
+  rt.philosopher === testPayload.philosopher && rt.state === testPayload.state;
+});
+
+printResult(manifoldVerify);
+printResult(jsonRoundtrip);
+console.log(`  → verifyWaveform vs JSON round-trip: ${(jsonRoundtrip.avgNs / manifoldVerify.avgNs).toFixed(2)}x\n`);
+
+// ── 12d. materialiseJSON (substrate reads coordinates → JSON) ─────────────
+const manifoldInterpret = benchmark("BaseSubstrate.materialiseJSON() [substrate layer]", WF_ITER, () => {
+  wfGame.materialiseJSON();
+});
+
+const jsonParse = benchmark("JSON.parse(string)", WF_ITER, () => {
+  JSON.parse(payloadStr);
+});
+
+printResult(manifoldInterpret);
+printResult(jsonParse);
+console.log(`  → materialiseJSON vs JSON.parse: ${(jsonParse.avgNs / manifoldInterpret.avgNs).toFixed(2)}x\n`);
+
+// ── 12e. materialiseBuffer (substrate reads coordinates → bytes) ──────────
+const encoder = new TextEncoder();
+const manifoldBuffer = benchmark("BaseSubstrate.materialiseBuffer() [substrate layer]", WF_ITER, () => {
+  wfGame.materialiseBuffer();
+});
+
+const textEncode = benchmark("TextEncoder.encode(string)", WF_ITER, () => {
+  encoder.encode(payloadStr);
+});
+
+printResult(manifoldBuffer);
+printResult(textEncode);
+console.log(`  → materialiseBuffer vs TextEncoder: ${(textEncode.avgNs / manifoldBuffer.avgNs).toFixed(2)}x\n`);
+
+// ── 12f. Full round-trip: encode → verify → materialise ──────────────────
+const fullRoundtrip = benchmark("Full manifold round-trip (encode→verify→materialise)", 10_000, () => {
+  wfGame.encodeToWaveform(testPayload);
+  wfGame.verifyWaveform();
+  wfGame.materialiseJSON();
+});
+
+const jsonFullRoundtrip = benchmark("Full JSON round-trip (stringify→parse→validate)", 10_000, () => {
+  const s = JSON.stringify(testPayload);
+  const o = JSON.parse(s) as typeof testPayload;
+  o.philosopher === testPayload.philosopher;
+});
+
+printResult(fullRoundtrip);
+printResult(jsonFullRoundtrip);
+console.log(`  → Full manifold round-trip vs JSON round-trip: ${(jsonFullRoundtrip.avgNs / fullRoundtrip.avgNs).toFixed(2)}x\n`);
+
+// ── 12g. HELIX section dimensional names ────────────────────────────────
+console.log("  HELIX section ontology (7 sections × 90° = one full cycle):");
+for (let i = 0; i < 7; i++) {
+  const name = wfGame.dimensionalName(i);
+  const z = wfGame.readManifold(i + 1, 0.5, i);
+  console.log(`    Section ${i} (${(i * 90)}°) → ${name.padEnd(6)} z=${z.toFixed(4)}`);
+}
+
+// ── Laptop baseline context ───────────────────────────────────────────────
+console.log("\n  ── Laptop Baseline Context ─────────────────────────────────────");
+console.log("     Memory read (L1 cache):   ~1 ns");
+console.log("     Memory read (L2 cache):   ~5 ns");
+console.log("     JSON.stringify (small):   ~200–600 ns (varies by engine)");
+console.log("     Mutex lock/unlock:        ~20–100 ns (OS call)");
+console.log("     Hash map lookup (JS Map): ~10–40 ns");
+console.log("     Object property access:   ~1–5 ns");
+console.log("     Manifold drill (1 level): ~12 ns  (L1 cache territory)");
+console.log("     Manifold drill (5 level): ~40 ns  (L2 cache territory)");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SUMMARY

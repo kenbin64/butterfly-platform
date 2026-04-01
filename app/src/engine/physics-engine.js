@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PhysicsEngine = void 0;
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // Physics engine using manifold-based calculations
 class PhysicsEngine {
     constructor() {
         this.gravity = 9.81;
         this.isRunning = false;
+        this.tickInterval = null;
         this.initializeStore();
         this.initializeDimensionalState();
     }
@@ -18,15 +19,19 @@ class PhysicsEngine {
         this.physicsStore.set("gravity", { x: 0, y: this.gravity });
     }
     initializeDimensionalState() {
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         this.dimensionalState.drill("physics", "status").value = "initialized";
         this.dimensionalState.drill("physics", "bodyCount").value = 0;
     }
     addBody(id, properties) {
         // Manifold-based body creation
+        const velocity = properties.isStatic
+            ? { x: 0, y: 0 }
+            : properties.velocity || { x: properties.vx || 0, y: properties.vy || 0 };
         this.physicsStore.set(id, {
             ...properties,
-            velocity: properties.velocity || { x: 0, y: 0 },
+            id,
+            velocity,
             acceleration: properties.acceleration || { x: 0, y: 0 },
             mass: properties.mass || 1,
             isStatic: properties.isStatic || false
@@ -47,7 +52,7 @@ class PhysicsEngine {
         if (!this.isRunning)
             return;
         // Manifold-based physics simulation
-        const bodies = this.physicsStore.getAll();
+        const bodies = this.physicsStore.getAll().filter(({ id }) => id !== "gravity");
         bodies.forEach(({ id, entity }) => {
             if (entity.isStatic)
                 return;
@@ -88,22 +93,31 @@ class PhysicsEngine {
         return this.physicsStore.get(id);
     }
     getAllBodies() {
-        return this.physicsStore.getAll().map(({ entity }) => entity);
+        return this.physicsStore.getAll()
+            .filter(({ id }) => id !== "gravity")
+            .map(({ entity }) => entity);
     }
     start() {
         this.isRunning = true;
         this.dimensionalState.drill("physics", "status").value = "running";
+        this.tickInterval = setInterval(() => this.update(1 / 60), 1000 / 60);
         console.log("PhysicsEngine started - manifold-based");
     }
     stop() {
         this.isRunning = false;
+        if (this.tickInterval) {
+            clearInterval(this.tickInterval);
+            this.tickInterval = null;
+        }
         this.dimensionalState.drill("physics", "status").value = "stopped";
         console.log("PhysicsEngine stopped");
     }
     getStats() {
+        const bodyCount = this.dimensionalState.drill("physics", "bodyCount").value;
         return {
             status: this.dimensionalState.drill("physics", "status").value,
-            bodyCount: this.dimensionalState.drill("physics", "bodyCount").value,
+            bodies: bodyCount,
+            bodyCount,
             gravity: this.physicsStore.get("gravity"),
             memoryUsage: this.physicsStore.getStats()
         };

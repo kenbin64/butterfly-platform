@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIEngine = void 0;
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // AI engine using manifold-based artificial intelligence
 class AIEngine {
     constructor() {
@@ -53,7 +53,7 @@ class AIEngine {
         this.aiStore.set("agents", {});
     }
     initializeDimensionalState() {
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         this.dimensionalState.drill("ai", "status").value = "initialized";
         this.dimensionalState.drill("ai", "agentCount").value = 0;
         this.dimensionalState.drill("ai", "training").value = false;

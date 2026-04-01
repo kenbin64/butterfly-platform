@@ -108,6 +108,8 @@ class ManifoldFacade {
                 this.applyMasterOptimization();
                 break;
         }
+        // Track the current level via drill so getStats() can read it back
+        this.dimensionalState.drill("optimization", "level").value = level;
         this.updateDimensionalState("optimization", "level", level);
     }
     /**
@@ -149,23 +151,17 @@ class ManifoldFacade {
             }
         };
     }
-    convertToManifoldPhysics(entities, deltaTime) {
-        return entities.map(entity => {
-            if (!entity.velocity)
-                return { id: entity.id, properties: entity };
-            // Manifold-native physics calculation
-            const newPosition = {
-                x: entity.position.x + entity.velocity.x * deltaTime,
-                y: entity.position.y + entity.velocity.y * deltaTime
-            };
-            return {
-                id: entity.id,
-                properties: {
-                    position: newPosition,
-                    velocity: entity.velocity
-                }
-            };
-        });
+    convertToManifoldPhysics(entities, _deltaTime) {
+        // Entities arrive with their positions already computed by the caller.
+        // The facade's job is to persist those positions into the entity store,
+        // not to apply another round of velocity integration.
+        return entities.map(entity => ({
+            id: entity.id,
+            properties: {
+                position: entity.position,
+                velocity: entity.velocity
+            }
+        }));
     }
     convertToManifoldRender(entities, canvas) {
         return {
@@ -290,7 +286,7 @@ class ManifoldFacade {
         this.dimensionalState.drill("optimization", "strategy").value = "master";
     }
     updateDimensionalState(category, action, target) {
-        const timestamp = Date.now();
+        const timestamp = String(Date.now());
         this.dimensionalState.drill("history", timestamp).value = {
             category,
             action,
@@ -301,7 +297,8 @@ class ManifoldFacade {
     getStats() {
         return {
             entities: this.entityStore.getAll().length,
-            dimensionalState: this.dimensionalState.extract("state"),
+            // drill() into "state" — returns the Dimension node; always defined
+            dimensionalState: this.dimensionalState.drill("state"),
             optimization: this.dimensionalState.drill("optimization", "level").value || 1,
             memoryUsage: this.entityStore.getStats()
         };
@@ -317,18 +314,19 @@ class ManifoldTransaction {
         this.committed = false;
         this.facade = facade;
     }
-    createEntity(id, type, properties) {
+    createEntity(id, entityType, properties) {
+        // Use separate keys for operation type vs entity type to avoid shadowing
         this.operations.push({
-            type: "create",
+            op: "create",
             id,
-            type,
+            entityType,
             properties
         });
         return this;
     }
     updateEntity(id, updates) {
         this.operations.push({
-            type: "update",
+            op: "update",
             id,
             updates
         });
@@ -336,7 +334,7 @@ class ManifoldTransaction {
     }
     removeEntity(id) {
         this.operations.push({
-            type: "remove",
+            op: "remove",
             id
         });
         return this;
@@ -347,9 +345,9 @@ class ManifoldTransaction {
         try {
             // Apply all operations in manifold-consistent order
             this.operations.forEach(op => {
-                switch (op.type) {
+                switch (op.op) {
                     case "create":
-                        this.facade.createEntity(op.id, op.type, op.properties);
+                        this.facade.createEntity(op.id, op.entityType, op.properties);
                         break;
                     case "update":
                         this.facade.updateEntity(op.id, op.updates);

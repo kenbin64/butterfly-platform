@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MainEngine = void 0;
-const factory_1 = require("../../core/factory");
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const factory_1 = require("../../../core/factory");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // Main engine that coordinates all subsystems
 class MainEngine {
     constructor() {

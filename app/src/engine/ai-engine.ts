@@ -1,5 +1,5 @@
-import { EntityStore } from "../../core/substrate/entity-store";
-import { Dimension } from "../../core/dimensional";
+import { EntityStore } from "../../../core/substrate/entity-store";
+import { Dimension, dimFrom } from "../../../core/dimensional";
 
 // AI engine using manifold-based artificial intelligence
 export class AIEngine {
@@ -27,7 +27,7 @@ export class AIEngine {
       biases: [],
       learningRate: 0.01
     };
-    
+
     // Manifold-based weight initialization
     this.initializeWeights();
   }
@@ -37,15 +37,15 @@ export class AIEngine {
     for (let i = 0; i < this.neuralNetwork.layers.length - 1; i++) {
       const inputSize = this.neuralNetwork.layers[i].neurons;
       const outputSize = this.neuralNetwork.layers[i + 1].neurons;
-      
+
       // Manifold-based weight matrix
       const weights = new Array(inputSize).fill(0).map(() =>
         new Array(outputSize).fill(0).map(() => Math.random() * 2 - 1)
       );
-      
+
       // Manifold-based bias vector
       const biases = new Array(outputSize).fill(0).map(() => Math.random() * 2 - 1);
-      
+
       this.neuralNetwork.weights.push(weights);
       this.neuralNetwork.biases.push(biases);
     }
@@ -54,7 +54,7 @@ export class AIEngine {
   private initializeStore(): void {
     // Create AI entity store
     this.aiStore = new EntityStore("ai");
-    
+
     // Manifold-based AI properties
     this.aiStore.set("aiSettings", {
       maxDepth: 5,
@@ -62,12 +62,12 @@ export class AIEngine {
       learningRate: 0.01,
       explorationRate: 0.1
     });
-    
+
     this.aiStore.set("agents", {});
   }
 
   private initializeDimensionalState(): void {
-    this.dimensionalState = Dimension.from({});
+    this.dimensionalState = dimFrom({});
     this.dimensionalState.drill("ai", "status").value = "initialized";
     this.dimensionalState.drill("ai", "agentCount").value = 0;
     this.dimensionalState.drill("ai", "training").value = false;
@@ -84,16 +84,16 @@ export class AIEngine {
       isActive: true,
       createdAt: Date.now()
     });
-    
+
     // Update dimensional state
-    const currentCount = this.dimensionalState.drill("ai", "agentCount").value;
+    const currentCount = this.dimensionalState.drill("ai", "agentCount").value as number;
     this.dimensionalState.drill("ai", "agentCount").value = currentCount + 1;
   }
 
   public removeAgent(id: string): boolean {
     const result = this.aiStore.delete(id);
     if (result) {
-      const currentCount = this.dimensionalState.drill("ai", "agentCount").value;
+      const currentCount = this.dimensionalState.drill("ai", "agentCount").value as number;
       this.dimensionalState.drill("ai", "agentCount").value = currentCount - 1;
     }
     return result;
@@ -117,11 +117,11 @@ export class AIEngine {
   public predict(input: number[]): number[] {
     // Manifold-based neural network prediction
     let currentInput = input;
-    
+
     for (let i = 0; i < this.neuralNetwork.layers.length - 1; i++) {
       const weights = this.neuralNetwork.weights[i];
       const biases = this.neuralNetwork.biases[i];
-      
+
       // Manifold-based matrix multiplication
       const output = new Array(weights[0].length).fill(0);
       for (let j = 0; j < weights.length; j++) {
@@ -129,15 +129,15 @@ export class AIEngine {
           output[k] += currentInput[j] * weights[j][k];
         }
       }
-      
+
       // Manifold-based bias addition and activation
       for (let j = 0; j < output.length; j++) {
         output[j] = this.activate(output[j] + biases[j], this.neuralNetwork.layers[i + 1].activation);
       }
-      
+
       currentInput = output;
     }
-    
+
     return currentInput;
   }
 
@@ -147,10 +147,10 @@ export class AIEngine {
       for (let i = 0; i < inputs.length; i++) {
         const input = inputs[i];
         const target = targets[i];
-        
+
         // Manifold-based forward pass
         const predictions = this.predict(input);
-        
+
         // Manifold-based backpropagation
         this.backpropagate(input, predictions, target);
       }
@@ -163,18 +163,18 @@ export class AIEngine {
     for (let i = 0; i < prediction.length; i++) {
       errors[i] = target[i] - prediction[i];
     }
-    
+
     // Manifold-based weight updates
     for (let i = this.neuralNetwork.layers.length - 2; i >= 0; i--) {
       const weights = this.neuralNetwork.weights[i];
       const biases = this.neuralNetwork.biases[i];
-      
+
       for (let j = 0; j < weights.length; j++) {
         for (let k = 0; k < weights[j].length; k++) {
           weights[j][k] += this.neuralNetwork.learningRate * errors[k] * input[j];
         }
       }
-      
+
       for (let j = 0; j < biases.length; j++) {
         biases[j] += this.neuralNetwork.learningRate * errors[j];
       }
@@ -201,19 +201,19 @@ export class AIEngine {
     // Manifold-based decision making
     const agent = this.getAgent(agentId);
     if (!agent || !agent.isActive) return null;
-    
+
     // Manifold-based state encoding
     const encodedState = this.encodeState(state);
-    
+
     // Manifold-based prediction
     const prediction = this.predict(encodedState);
-    
+
     // Manifold-based action selection
     const action = this.selectAction(prediction, agent);
-    
+
     // Manifold-based memory update
     this.updateMemory(agentId, state, action, prediction);
-    
+
     return action;
   }
 
@@ -230,7 +230,7 @@ export class AIEngine {
 
   private selectAction(prediction: number[], agent: any): any {
     // Manifold-based action selection (epsilon-greedy)
-    const explorationRate = this.aiStore.get("aiSettings").explorationRate;
+    const explorationRate = this.aiStore.get("aiSettings").explorationRate as number;
     if (Math.random() < explorationRate) {
       // Random action
       return {
@@ -257,12 +257,12 @@ export class AIEngine {
         prediction: prediction,
         timestamp: Date.now()
       });
-      
+
       // Manifold-based memory management
       if (memory.length > 1000) {
         memory.shift();
       }
-      
+
       this.updateAgent(agentId, { memory: memory });
     }
   }

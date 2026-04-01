@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RendererEngine = void 0;
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // Renderer engine using manifold-based rendering
 class RendererEngine {
     constructor() {
@@ -37,7 +37,7 @@ class RendererEngine {
         });
     }
     initializeDimensionalState() {
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         this.dimensionalState.drill("renderer", "status").value = "initialized";
         this.dimensionalState.drill("renderer", "fps").value = 0;
         this.dimensionalState.drill("renderer", "frameTime").value = 0;

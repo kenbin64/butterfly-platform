@@ -1,6 +1,7 @@
-import { ManifoldSupercharger } from "../../core/enhanced/manifold-supercharger";
-import { EntityStoreRegistry } from "../../core/substrate/entity-store";
-import { Dimension } from "../../core/dimensional";
+import { ManifoldSupercharger } from "../../../core/enhanced/manifold-supercharger";
+import { EntityStoreRegistry } from "../../../core/substrate/entity-store";
+import { Dimension, dimFrom } from "../../../core/dimensional";
+import { SaddleForm } from "../../../core/geometry/saddle";
 
 // Enhanced main engine with supercharged manifold capabilities
 export class EnhancedMainEngine {
@@ -23,7 +24,7 @@ export class EnhancedMainEngine {
 
   private initializeEntityStores(): void {
     this.entityRegistry = this.supercharger.getEnhancedRegistry();
-    
+
     // Create enhanced entity stores with manifold optimization
     this.entityRegistry.createStore("physics");
     this.entityRegistry.createStore("audio");
@@ -34,8 +35,8 @@ export class EnhancedMainEngine {
 
   private initializeDimensionalState(): void {
     // Enhanced dimensional state with manifold optimization
-    this.dimensionalState = Dimension.from({});
-    
+    this.dimensionalState = dimFrom({});
+
     // Manifold-based enhanced state structure
     this.dimensionalState.drill("engine", "status").value = "initialized";
     this.dimensionalState.drill("engine", "frame").value = 0;
@@ -46,10 +47,10 @@ export class EnhancedMainEngine {
 
   public start(): void {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     this.dimensionalState.drill("engine", "status").value = "running";
-    
+
     console.log("EnhancedMainEngine started - supercharged manifold-based");
     this.runEnhancedLoop();
   }
@@ -63,32 +64,32 @@ export class EnhancedMainEngine {
   private async runEnhancedLoop(): Promise<void> {
     while (this.isRunning) {
       const frameStart = performance.now();
-      
+
       // Enhanced manifold-based frame update
       this.updateEnhancedFrame();
       this.updateEnhancedSubstrate();
       this.updateEnhancedEntities();
-      
+
       // Enhanced manifold-based timing
       const frameEnd = performance.now();
       const frameTime = frameEnd - frameStart;
       this.dimensionalState.drill("engine", "frameTime").value = frameTime;
-      
+
       // Enhanced manifold-based optimization
       this.applyEnhancedOptimization();
-      
+
       // Wait for next frame with manifold-based timing
       await this.enhancedFrameWait();
     }
   }
 
   private updateEnhancedFrame(): void {
-    const currentFrame = this.dimensionalState.drill("engine", "frame").value;
+    const currentFrame = this.dimensionalState.drill("engine", "frame").value as number;
     this.dimensionalState.drill("engine", "frame").value = currentFrame + 1;
-    
+
     // Enhanced manifold-based frame counter
-    this.dimensionalState.drill("engine", "time").value = 
-      this.dimensionalState.drill("engine", "time").value + 16.67;
+    this.dimensionalState.drill("engine", "time").value =
+      (this.dimensionalState.drill("engine", "time").value as number) + 16.67;
   }
 
   private updateEnhancedSubstrate(): void {
@@ -98,7 +99,7 @@ export class EnhancedMainEngine {
       // Enhanced manifold-based field manipulation
       const position = cell.position;
       const form = cell.form;
-      
+
       // Manifold-based field optimization
       const optimizedValue = this.optimizeFieldValue(position, form);
       this.dimensionalState.drill("engine", "fieldOptimization", position.join(",")).value = optimizedValue;
@@ -109,12 +110,12 @@ export class EnhancedMainEngine {
     // Enhanced manifold-based field optimization
     const x = position[0];
     const y = position[1];
-    
+
     // Manifold-based optimization using substrate patterns
     const optimizationFactor = this.optimizationLevel / 5;
     const pattern = Math.sin(x * 0.05) * Math.cos(y * 0.05);
     const optimizedValue = form.valueAt(x, y) * (1 + pattern * optimizationFactor);
-    
+
     return optimizedValue;
   }
 
@@ -124,7 +125,7 @@ export class EnhancedMainEngine {
     const audioStore = this.entityRegistry.getStore("audio");
     const gameStore = this.entityRegistry.getStore("game");
     const enhancedStore = this.entityRegistry.getStore("enhanced");
-    
+
     // Enhanced manifold-based physics updates
     if (physicsStore) {
       const entities = physicsStore.getAll();
@@ -132,7 +133,7 @@ export class EnhancedMainEngine {
         // Enhanced manifold-based physics calculations
         const enhancedVelocity = this.enhanceVelocity(entity.velocity);
         const enhancedPosition = this.enhancePosition(entity.position, enhancedVelocity);
-        
+
         physicsStore.set(id, {
           ...entity,
           velocity: enhancedVelocity,
@@ -141,27 +142,27 @@ export class EnhancedMainEngine {
         });
       });
     }
-    
+
     // Enhanced manifold-based audio updates
     if (audioStore) {
       // Enhanced manifold-based audio processing
       const tracks = audioStore.getAll();
       tracks.forEach(({ id, entity }) => {
-        const enhancedVolume = this.enhanceAudioVolume(entity.volume);
+        const enhancedVolume = this.enhanceAudioVolume(entity.volume as number);
         audioStore.set(id, { ...entity, volume: enhancedVolume });
       });
     }
-    
+
     // Enhanced manifold-based game updates
     if (gameStore) {
       const entities = gameStore.getAll();
       entities.forEach(({ id, entity }) => {
         // Enhanced manifold-based game logic
-        const enhancedHealth = this.enhanceHealth(entity.health);
+        const enhancedHealth = this.enhanceHealth(entity.health as number);
         gameStore.set(id, { ...entity, health: enhancedHealth });
       });
     }
-    
+
     // Enhanced manifold-based enhanced store updates
     if (enhancedStore) {
       // Enhanced manifold-based enhanced processing
@@ -171,7 +172,7 @@ export class EnhancedMainEngine {
         enhancedStore.set(id, { ...entity, data: enhancedData });
       });
     }
-    
+
     // Enhanced manifold-based commit
     this.entityRegistry.flushAll();
   }
@@ -220,7 +221,7 @@ export class EnhancedMainEngine {
   private applyEnhancedOptimization(): void {
     // Enhanced manifold-based optimization application
     const optimizationLevel = this.dimensionalState.drill("engine", "optimizationLevel").value;
-    
+
     // Enhanced manifold-based optimization strategies
     switch (optimizationLevel) {
       case 1:
@@ -268,10 +269,10 @@ export class EnhancedMainEngine {
 
   private async enhancedFrameWait(): Promise<void> {
     // Enhanced manifold-based frame waiting
-    const optimizationLevel = this.dimensionalState.drill("engine", "optimizationLevel").value;
+    const optimizationLevel = this.dimensionalState.drill("engine", "optimizationLevel").value as number;
     const baseWait = 16;
     const optimizationWait = baseWait / (optimizationLevel + 1);
-    
+
     return new Promise(resolve => setTimeout(resolve, optimizationWait));
   }
 
@@ -283,7 +284,13 @@ export class EnhancedMainEngine {
       frameTime: this.dimensionalState.drill("engine", "frameTime").value,
       optimizationLevel: this.dimensionalState.drill("engine", "optimizationLevel").value,
       saddleCells: this.dimensionalState.drill("engine", "saddleCells").value,
-      superchargerStats: this.supercharger.getStats()
+      superchargerStats: this.supercharger.getStats(),
+      engines: {
+        enhancedMain: {
+          status: this.dimensionalState.drill("engine", "status").value,
+          optimizationLevel: this.dimensionalState.drill("engine", "optimizationLevel").value
+        }
+      }
     };
   }
 

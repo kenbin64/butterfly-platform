@@ -1,5 +1,5 @@
-import { EntityStore } from "../../core/substrate/entity-store";
-import { Dimension } from "../../core/dimensional";
+import { EntityStore } from "../../../core/substrate/entity-store";
+import { Dimension, dimFrom } from "../../../core/dimensional";
 
 // Audio engine using manifold-based sound synthesis
 export class AudioEngine {
@@ -16,20 +16,25 @@ export class AudioEngine {
 
   private initializeAudioContext(): void {
     // Manifold-based audio context creation
-    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      const AudioCtx = (typeof window !== "undefined" && (window.AudioContext || (window as any).webkitAudioContext)) || null;
+      this.audioContext = AudioCtx ? new AudioCtx() : ({} as AudioContext);
+    } catch {
+      this.audioContext = {} as AudioContext;
+    }
   }
 
   private initializeStore(): void {
     // Create audio entity store
     this.audioStore = new EntityStore("audio");
-    
+
     // Manifold-based audio properties
     this.audioStore.set("masterVolume", { value: 0.8 });
     this.audioStore.set("tempo", { bpm: 120 });
   }
 
   private initializeDimensionalState(): void {
-    this.dimensionalState = Dimension.from({});
+    this.dimensionalState = dimFrom({});
     this.dimensionalState.drill("audio", "status").value = "initialized";
     this.dimensionalState.drill("audio", "trackCount").value = 0;
     this.dimensionalState.drill("audio", "playing").value = false;
@@ -45,16 +50,16 @@ export class AudioEngine {
       isPlaying: false,
       currentTime: 0
     });
-    
+
     // Update dimensional state
-    const currentCount = this.dimensionalState.drill("audio", "trackCount").value;
+    const currentCount = this.dimensionalState.drill("audio", "trackCount").value as number;
     this.dimensionalState.drill("audio", "trackCount").value = currentCount + 1;
   }
 
   public removeTrack(id: string): boolean {
     const result = this.audioStore.delete(id);
     if (result) {
-      const currentCount = this.dimensionalState.drill("audio", "trackCount").value;
+      const currentCount = this.dimensionalState.drill("audio", "trackCount").value as number;
       this.dimensionalState.drill("audio", "trackCount").value = currentCount - 1;
     }
     return result;
@@ -65,7 +70,7 @@ export class AudioEngine {
     if (track) {
       // Manifold-based playback
       this.audioStore.set(id, { ...track, isPlaying: true, currentTime: 0 });
-      
+
       // Manifold-based scheduling
       this.scheduleTrackPlayback(id);
     }
@@ -74,24 +79,24 @@ export class AudioEngine {
   private async scheduleTrackPlayback(id: string): Promise<void> {
     const track = this.audioStore.get(id);
     if (!track || !track.isPlaying) return;
-    
+
     // Manifold-based audio synthesis
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(this.audioContext.destination);
-    
+
     // Manifold-based frequency modulation
-    oscillator.frequency.value = track.frequency || 440;
-    gainNode.gain.value = track.volume;
-    
+    oscillator.frequency.value = (track.frequency as number) || 440;
+    gainNode.gain.value = track.volume as number;
+
     oscillator.start();
-    oscillator.stop(this.audioContext.currentTime + (track.duration || 1));
-    
+    oscillator.stop(this.audioContext.currentTime + ((track.duration as number) || 1));
+
     // Manifold-based timing
-    await new Promise(resolve => setTimeout(resolve, (track.duration || 1) * 1000));
-    
+    await new Promise(resolve => setTimeout(resolve, ((track.duration as number) || 1) * 1000));
+
     // Update track state
     this.audioStore.set(id, { ...track, isPlaying: false });
   }
@@ -127,7 +132,7 @@ export class AudioEngine {
 
   public getMasterVolume(): number {
     const volume = this.audioStore.get("masterVolume");
-    return volume ? volume.value : 0.8;
+    return volume ? (volume.value as number) : 0.8;
   }
 
   public getStats(): any {

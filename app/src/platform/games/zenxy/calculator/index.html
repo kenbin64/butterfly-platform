@@ -4,37 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zenxy Calculator - Saddle Math</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../lib/fonts/fonts.css">
   <style>
     :root { --bg: #0a0a10; --panel: rgba(15,15,25,0.9); --cyan: #00d4ff; --magenta: #ff2d95; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); color: #e8e8f0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    
+
     header { text-align: center; margin-bottom: 30px; }
     .back { color: #888; text-decoration: none; font-size: 0.9rem; }
     h1 { font-family: 'Orbitron'; font-size: 2rem; color: var(--cyan); margin-top: 10px; }
     .subtitle { color: #666; font-size: 0.85rem; }
-    
+
     .calculator {
       background: var(--panel); border: 1px solid rgba(0,180,255,0.3);
       border-radius: 20px; padding: 25px; width: 100%; max-width: 380px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(0,212,255,0.1);
     }
-    
+
     .display {
       background: rgba(0,0,0,0.5); border-radius: 12px; padding: 20px;
       margin-bottom: 20px; text-align: right; border: 1px solid rgba(0,180,255,0.2);
     }
     .expression { font-size: 1rem; color: #888; min-height: 1.2em; }
     .result { font-family: 'Orbitron'; font-size: 2.5rem; color: #fff; word-break: break-all; }
-    
+
     .saddle-viz {
       height: 80px; margin-bottom: 15px; background: rgba(0,0,0,0.3);
       border-radius: 10px; position: relative; overflow: hidden;
     }
     .saddle-viz canvas { width: 100%; height: 100%; }
     .saddle-label { position: absolute; bottom: 5px; left: 10px; font-size: 0.7rem; color: var(--cyan); }
-    
+
     .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .btn {
       padding: 18px; font-size: 1.3rem; font-family: 'Orbitron';
@@ -47,7 +47,7 @@
     .btn.eq { background: linear-gradient(135deg, var(--cyan), var(--magenta)); color: #000; }
     .btn.clear { color: var(--magenta); }
     .btn.span2 { grid-column: span 2; }
-    
+
     .info { margin-top: 20px; font-size: 0.8rem; color: #666; text-align: center; max-width: 380px; }
     .info code { color: var(--cyan); background: rgba(0,212,255,0.1); padding: 2px 6px; border-radius: 4px; }
   </style>
@@ -58,50 +58,50 @@
     <h1>🔢 ZENXY CALCULATOR</h1>
     <p class="subtitle">Every operation via saddle math: z = xy</p>
   </header>
-  
+
   <div class="calculator">
     <div class="display">
       <div class="expression" id="expr"></div>
       <div class="result" id="result">0</div>
     </div>
-    
+
     <div class="saddle-viz">
       <canvas id="saddle"></canvas>
       <span class="saddle-label" id="saddle-label">z = x × y</span>
     </div>
-    
+
     <div class="buttons">
       <button class="btn clear" onclick="clearAll()">C</button>
       <button class="btn op" onclick="input('(')">(</button>
       <button class="btn op" onclick="input(')')">)</button>
       <button class="btn op" onclick="input('/')">÷</button>
-      
+
       <button class="btn" onclick="input('7')">7</button>
       <button class="btn" onclick="input('8')">8</button>
       <button class="btn" onclick="input('9')">9</button>
       <button class="btn op" onclick="input('*')">×</button>
-      
+
       <button class="btn" onclick="input('4')">4</button>
       <button class="btn" onclick="input('5')">5</button>
       <button class="btn" onclick="input('6')">6</button>
       <button class="btn op" onclick="input('-')">−</button>
-      
+
       <button class="btn" onclick="input('1')">1</button>
       <button class="btn" onclick="input('2')">2</button>
       <button class="btn" onclick="input('3')">3</button>
       <button class="btn op" onclick="input('+')">+</button>
-      
+
       <button class="btn span2" onclick="input('0')">0</button>
       <button class="btn" onclick="input('.')">.</button>
       <button class="btn eq" onclick="calculate()">=</button>
     </div>
   </div>
-  
+
   <div class="info">
     <p>All operations computed as <code>z = x × y</code> saddle evaluations.</p>
     <p>Subtraction: <code>z = x × (-1) × |y|</code> • Division: <code>z = x × (1/y)</code></p>
   </div>
-  
+
   <script src="calculator.js"></script>
 </body>
 </html>

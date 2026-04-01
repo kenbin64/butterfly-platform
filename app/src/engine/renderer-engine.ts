@@ -1,5 +1,5 @@
-import { EntityStore } from "../../core/substrate/entity-store";
-import { Dimension } from "../../core/dimensional";
+import { EntityStore } from "../../../core/substrate/entity-store";
+import { Dimension, dimFrom } from "../../../core/dimensional";
 
 // Renderer engine using manifold-based rendering
 export class RendererEngine {
@@ -27,7 +27,7 @@ export class RendererEngine {
   private initializeStore(): void {
     // Create render entity store
     this.renderStore = new EntityStore("render");
-    
+
     // Manifold-based render properties
     this.renderStore.set("renderSettings", {
       backgroundColor: "#000000",
@@ -35,7 +35,7 @@ export class RendererEngine {
       showFPS: true,
       showDebug: false
     });
-    
+
     this.renderStore.set("camera", {
       x: 0,
       y: 0,
@@ -45,7 +45,7 @@ export class RendererEngine {
   }
 
   private initializeDimensionalState(): void {
-    this.dimensionalState = Dimension.from({});
+    this.dimensionalState = dimFrom({});
     this.dimensionalState.drill("renderer", "status").value = "initialized";
     this.dimensionalState.drill("renderer", "fps").value = 0;
     this.dimensionalState.drill("renderer", "frameTime").value = 0;
@@ -86,34 +86,34 @@ export class RendererEngine {
 
   public render(entities: any[]): void {
     if (!this.isRunning) return;
-    
+
     // Manifold-based rendering
     const startTime = performance.now();
     this.frameCount++;
-    
+
     // Clear canvas with manifold-based background
     const settings = this.renderStore.get("renderSettings");
     if (settings) {
-      this.context.fillStyle = settings.backgroundColor;
+      this.context.fillStyle = settings.backgroundColor as string;
       this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    
+
     // Manifold-based camera transformation
     const camera = this.renderStore.get("camera");
     this.context.save();
     this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
-    this.context.scale(camera.zoom, camera.zoom);
-    this.context.rotate(camera.rotation);
+    this.context.scale(camera.zoom as number, camera.zoom as number);
+    this.context.rotate(camera.rotation as number);
     this.context.translate(-camera.x, -camera.y);
-    
+
     // Manifold-based entity rendering
     const renderables = this.getAllRenderables();
     renderables.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
-    
+
     let entitiesRendered = 0;
     renderables.forEach(renderable => {
       if (!renderable.visible) return;
-      
+
       // Manifold-based render logic
       switch (renderable.type) {
         case "rectangle":
@@ -134,23 +134,23 @@ export class RendererEngine {
           break;
       }
     });
-    
+
     // Manifold-based debug rendering
     if (settings && settings.showDebug) {
       this.renderDebugInfo(entities, entitiesRendered);
     }
-    
+
     this.context.restore();
-    
+
     // Manifold-based FPS calculation
     const endTime = performance.now();
     const frameTime = endTime - startTime;
     this.dimensionalState.drill("renderer", "frameTime").value = frameTime;
-    
+
     if (this.frameCount % 60 === 0) {
       this.dimensionalState.drill("renderer", "fps").value = Math.round(1000 / frameTime);
     }
-    
+
     this.dimensionalState.drill("renderer", "entitiesRendered").value = entitiesRendered;
   }
 
@@ -206,15 +206,15 @@ export class RendererEngine {
     this.context.fillStyle = "#ffffff";
     this.context.globalAlpha = 0.7;
     this.context.font = "12px monospace";
-    
+
     const debugInfo = [
       `FPS: ${this.dimensionalState.drill("renderer", "fps").value || 0}`,
-      `Frame Time: ${this.dimensionalState.drill("renderer", "frameTime").value.toFixed(2)}ms`,
+      `Frame Time: ${(this.dimensionalState.drill("renderer", "frameTime").value as number || 0).toFixed(2)}ms`,
       `Entities: ${entitiesRendered}/${entities.length}`,
-      `Camera: x=${this.renderStore.get("camera")?.x.toFixed(1)}, y=${this.renderStore.get("camera")?.y.toFixed(1)}`,
-      `Zoom: ${this.renderStore.get("camera")?.zoom.toFixed(2)}`
+      `Camera: x=${(this.renderStore.get("camera")?.x as number || 0).toFixed(1)}, y=${(this.renderStore.get("camera")?.y as number || 0).toFixed(1)}`,
+      `Zoom: ${(this.renderStore.get("camera")?.zoom as number || 1).toFixed(2)}`
     ];
-    
+
     debugInfo.forEach((line, index) => {
       this.context.fillText(line, 10, 20 + index * 16);
     });

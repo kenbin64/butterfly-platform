@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameEngine = void 0;
-const entity_store_1 = require("../../core/substrate/entity-store");
-const dimensional_1 = require("../../core/dimensional");
+const entity_store_1 = require("../../../core/substrate/entity-store");
+const dimensional_1 = require("../../../core/dimensional");
 // Game engine using manifold-based game logic
 class GameEngine {
     constructor() {
         this.isRunning = false;
         this.gameState = {};
+        this.tickInterval = null;
         this.initializeStore();
         this.initializeDimensionalState();
         this.initializeGameState();
@@ -24,7 +25,7 @@ class GameEngine {
         });
     }
     initializeDimensionalState() {
-        this.dimensionalState = dimensional_1.Dimension.from({});
+        this.dimensionalState = (0, dimensional_1.dimFrom)({});
         this.dimensionalState.drill("game", "status").value = "initialized";
         this.dimensionalState.drill("game", "level").value = 1;
         this.dimensionalState.drill("game", "score").value = 0;
@@ -42,9 +43,15 @@ class GameEngine {
         this.gameStore.set(id, {
             type,
             ...properties,
+            id,
             health: properties.health || 100,
             position: properties.position || { x: 0, y: 0 },
-            velocity: properties.velocity || { x: 0, y: 0 },
+            velocity: (() => {
+                const v = properties.velocity || { x: 0, y: 0 };
+                const vx = v.x ?? v.vx ?? 0;
+                const vy = v.y ?? v.vy ?? 0;
+                return { x: vx, y: vy, vx, vy };
+            })(),
             isAlive: true,
             created: Date.now()
         });
@@ -78,7 +85,9 @@ class GameEngine {
         return this.gameStore.get(id);
     }
     getAllEntities() {
-        return this.gameStore.getAll().map(({ entity }) => entity);
+        return this.gameStore.getAll()
+            .filter(({ id }) => id !== "gameSettings")
+            .map(({ entity }) => entity);
     }
     update(dt) {
         if (!this.isRunning)
@@ -126,6 +135,7 @@ class GameEngine {
     }
     detectCollisions(entities) {
         // Manifold-based collision detection (simple AABB)
+        const collisions = [];
         for (let i = 0; i < entities.length; i++) {
             for (let j = i + 1; j < entities.length; j++) {
                 const entity1 = entities[i];
@@ -158,10 +168,15 @@ class GameEngine {
     start() {
         this.isRunning = true;
         this.dimensionalState.drill("game", "status").value = "running";
+        this.tickInterval = setInterval(() => this.update(1 / 60), 1000 / 60);
         console.log("GameEngine started - manifold-based");
     }
     stop() {
         this.isRunning = false;
+        if (this.tickInterval) {
+            clearInterval(this.tickInterval);
+            this.tickInterval = null;
+        }
         this.dimensionalState.drill("game", "status").value = "stopped";
         console.log("GameEngine stopped");
     }
@@ -187,12 +202,15 @@ class GameEngine {
         }
     }
     getStats() {
+        const entityCount = this.getAllEntities().length;
         return {
             status: this.dimensionalState.drill("game", "status").value,
             level: this.dimensionalState.drill("game", "level").value,
             score: this.dimensionalState.drill("game", "score").value,
             lives: this.dimensionalState.drill("game", "lives").value,
-            entityCount: this.gameStore.getStats().entities,
+            entities: entityCount,
+            entityCount,
+            memoryUsage: this.gameStore.getStats(),
             gameState: this.gameState
         };
     }

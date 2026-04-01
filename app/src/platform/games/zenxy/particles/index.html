@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Particle Flow - Saddle Surface</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../lib/fonts/fonts.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0a10; overflow: hidden; font-family: 'Rajdhani', sans-serif; }
     canvas { display: block; }
-    
+
     .controls {
       position: fixed; top: 20px; left: 20px; z-index: 100;
       background: rgba(15,15,25,0.9); padding: 20px; border-radius: 12px;
@@ -17,11 +17,11 @@
     }
     .controls h2 { font-family: 'Orbitron'; font-size: 1.2rem; color: #00d4ff; margin-bottom: 15px; }
     .controls a { color: #888; text-decoration: none; font-size: 0.85rem; display: block; margin-bottom: 10px; }
-    
+
     .control-row { margin-bottom: 12px; }
     .control-row label { display: block; font-size: 0.8rem; color: #888; margin-bottom: 4px; }
     .control-row input[type="range"] { width: 100%; }
-    
+
     .stats {
       position: fixed; bottom: 20px; left: 20px; z-index: 100;
       background: rgba(15,15,25,0.8); padding: 10px 15px; border-radius: 8px;
@@ -32,26 +32,26 @@
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  
+
   <div class="controls">
     <a href="../index.html">← Back to Zenxy</a>
     <h2>✨ PARTICLE FLOW</h2>
-    
+
     <div class="control-row">
       <label>Particle Count: <span id="countVal">10000</span></label>
       <input type="range" id="count" min="1000" max="50000" value="10000" oninput="updateCount()">
     </div>
-    
+
     <div class="control-row">
       <label>Flow Speed: <span id="speedVal">1.0</span></label>
       <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" oninput="updateSpeed()">
     </div>
-    
+
     <div class="control-row">
       <label>Saddle Intensity: <span id="intensityVal">1.0</span></label>
       <input type="range" id="intensity" min="0.1" max="2" step="0.1" value="1" oninput="updateIntensity()">
     </div>
-    
+
     <div class="control-row">
       <label>Color Mode</label>
       <select id="colorMode" onchange="updateColorMode()" style="width:100%; padding:5px; background:#1a1a2e; color:#e0e0e0; border:1px solid rgba(0,180,255,0.3); border-radius:4px;">
@@ -62,13 +62,13 @@
       </select>
     </div>
   </div>
-  
+
   <div class="stats">
-    Particles: <span id="particleCount">0</span> | 
-    FPS: <span id="fps">0</span> | 
+    Particles: <span id="particleCount">0</span> |
+    FPS: <span id="fps">0</span> |
     z = xy
   </div>
-  
+
   <script src="particles.js"></script>
 </body>
 </html>

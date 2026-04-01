@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manifold Gaming Platform</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="lib/fonts/fonts.css">
   <link rel="stylesheet" href="platform.css">
 </head>
 <body>
   <canvas id="manifold-bg"></canvas>
   <div class="platform-overlay">
-    
+
     <!-- Auth Screen -->
     <section id="auth-screen" class="screen active">
       <div class="logo-container">
@@ -19,13 +18,13 @@
         <h1 class="logo-text">MANIFOLD</h1>
         <p class="tagline">Dimensional Gaming Platform</p>
       </div>
-      
+
       <div class="auth-card glass-panel">
         <div class="auth-tabs">
           <button class="auth-tab active" data-tab="login">Login</button>
           <button class="auth-tab" data-tab="register">Register</button>
         </div>
-        
+
         <form id="login-form" class="auth-form active">
           <div class="input-group">
             <label>Username</label>
@@ -37,7 +36,7 @@
           </div>
           <button type="submit" class="btn btn-primary">⟐ Enter the Manifold</button>
         </form>
-        
+
         <form id="register-form" class="auth-form">
           <div class="input-group">
             <label>Choose Username</label>
@@ -49,13 +48,13 @@
           </div>
           <button type="submit" class="btn btn-primary">◈ Create Identity</button>
         </form>
-        
+
         <div class="auth-divider"><span>or</span></div>
-        
+
         <button class="btn btn-secondary" onclick="guestMode()">👤 Play as Guest</button>
         <button class="btn btn-secondary" onclick="joinByCode()">🎟️ Join by Code</button>
       </div>
-      
+
       <div class="security-badge">
         <span class="seed-indicator">◇</span>
         <span>Seed-Based Geometric Security</span>
@@ -83,7 +82,7 @@
       <!-- Games Panel -->
       <div id="games-panel" class="panel active">
         <div class="games-grid" id="games-grid"></div>
-        
+
         <div class="quick-actions">
           <button class="action-card" onclick="createGame('fasttrack')">
             <span class="action-icon">🎲</span>

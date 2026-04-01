@@ -4,6 +4,10 @@ import { PhysicsEngine } from "./engine/physics-engine";
 import { AudioEngine } from "./engine/audio-engine";
 import { GameEngine } from "./engine/game-engine";
 import { AIEngine } from "./engine/ai-engine";
+// MIA — Media Intelligence Architecture (loosely coupled — optional)
+import { ImageEngine }       from "./engine/image-engine";
+import { VideoEditorEngine } from "./engine/video-editor-engine";
+import type { MediaSubstrate } from "../../core/substrate/media-substrate";
 
 // Enhanced main application with supercharged manifold capabilities
 export class EnhancedMainApp {
@@ -13,11 +17,21 @@ export class EnhancedMainApp {
   private audioEngine: AudioEngine;
   private gameEngine: GameEngine;
   private aiEngine: AIEngine;
+  // MIA engines — loosely coupled, standalone by default
+  imageEngine: ImageEngine;
+  videoEditor: VideoEditorEngine;
   private isRunning: boolean = false;
   private optimizationLevel: number = 3;
 
-  constructor() {
+  /**
+   * @param miaRegistry  Optional MediaSubstrate registry.
+   *                     When supplied, ImageEngine and VideoEditorEngine
+   *                     self-register and can communicate through events.
+   *                     When omitted, they operate in full standalone mode.
+   */
+  constructor(miaRegistry?: MediaSubstrate) {
     this.initializeEnhancedEngines();
+    this.initializeMIAEngines(miaRegistry);
     this.setupEnhancedEventListeners();
   }
 
@@ -31,6 +45,12 @@ export class EnhancedMainApp {
     this.aiEngine = new AIEngine();
   }
 
+  /** Loosely coupled — MIA engines are optional. */
+  private initializeMIAEngines(registry?: MediaSubstrate): void {
+    this.imageEngine  = new ImageEngine({ registry });
+    this.videoEditor  = new VideoEditorEngine({ registry });
+  }
+
   private setupEnhancedEventListeners(): void {
     // Enhanced event coordination with supercharged manifold
     this.gameEngine.start();
@@ -39,16 +59,16 @@ export class EnhancedMainApp {
     this.aiEngine.start();
     this.rendererEngine.start();
     this.enhancedMainEngine.start();
-    
+
     console.log("EnhancedMainApp initialized - supercharged manifold-based");
   }
 
   public start(): void {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
     console.log("EnhancedMainApp started - supercharged manifold-based application");
-    
+
     this.runEnhancedMainLoop();
   }
 
@@ -66,20 +86,20 @@ export class EnhancedMainApp {
   private async runEnhancedMainLoop(): Promise<void> {
     const frameDuration = 1000 / 60; // 60 FPS
     let lastTime = performance.now();
-    
+
     while (this.isRunning) {
       const currentTime = performance.now();
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
-      
+
       // Enhanced manifold-based frame update
       this.updateEnhanced(deltaTime);
       this.renderEnhanced();
-      
+
       // Enhanced manifold-based timing
       const frameTime = performance.now() - currentTime;
       const sleepTime = Math.max(0, frameDuration - frameTime);
-      
+
       await new Promise(resolve => setTimeout(resolve, sleepTime));
     }
   }
@@ -96,7 +116,7 @@ export class EnhancedMainApp {
   private updateEnhancedPhysics(deltaTime: number): void {
     // Enhanced manifold-based physics update
     this.physicsEngine.update(deltaTime);
-    
+
     // Enhanced manifold-based entity synchronization
     const bodies = this.physicsEngine.getAllBodies();
     bodies.forEach(body => {
@@ -130,7 +150,7 @@ export class EnhancedMainApp {
     // Enhanced manifold-based action execution
     const agent = this.aiEngine.getAgent(agentId);
     if (!agent || !decision) return;
-    
+
     switch (decision.type) {
       case "predicted":
         // Enhanced manifold-based movement
@@ -193,34 +213,34 @@ export class EnhancedMainApp {
 
   private applyBasicEnhancedOptimization(): void {
     // Basic enhanced manifold-based optimization
-    this.rendererEngine.setMasterVolume(0.8);
+    this.audioEngine.setMasterVolume(0.8);
   }
 
   private applyIntermediateEnhancedOptimization(): void {
     // Intermediate enhanced manifold-based optimization
-    this.rendererEngine.setMasterVolume(0.9);
+    this.audioEngine.setMasterVolume(0.9);
   }
 
   private applyAdvancedEnhancedOptimization(): void {
     // Advanced enhanced manifold-based optimization
-    this.rendererEngine.setMasterVolume(1.0);
+    this.audioEngine.setMasterVolume(1.0);
   }
 
   private applyExpertEnhancedOptimization(): void {
     // Expert enhanced manifold-based optimization
-    this.rendererEngine.setMasterVolume(1.0);
+    this.audioEngine.setMasterVolume(1.0);
   }
 
   private applyMasterEnhancedOptimization(): void {
     // Master enhanced manifold-based optimization
-    this.rendererEngine.setMasterVolume(1.0);
+    this.audioEngine.setMasterVolume(1.0);
   }
 
   private renderEnhanced(): void {
     // Enhanced manifold-based rendering
     const entities = this.gameEngine.getAllEntities();
     this.rendererEngine.render(entities);
-    
+
     // Enhanced manifold-based UI updates
     this.updateEnhancedUI();
   }
@@ -235,7 +255,7 @@ export class EnhancedMainApp {
       game: this.gameEngine.getStats(),
       ai: this.aiEngine.getStats()
     };
-    
+
     // Enhanced manifold-based debug display
     this.displayEnhancedDebugInfo(stats);
   }
@@ -250,7 +270,7 @@ export class EnhancedMainApp {
           ctx.fillRect(10, 10, 250, 200);
           ctx.fillStyle = "#ffffff";
           ctx.font = "12px monospace";
-          
+
           let y = 25;
           Object.keys(stats).forEach(key => {
             const stat = stats[key];
@@ -272,7 +292,7 @@ export class EnhancedMainApp {
   public createEnhancedPlayer(x: number, y: number): string {
     // Enhanced manifold-based player creation
     const playerId = `player_${Date.now()}`;
-    
+
     // Enhanced manifold-based physics body creation
     this.physicsEngine.addBody(playerId, {
       x: x,
@@ -282,14 +302,14 @@ export class EnhancedMainApp {
       mass: 1,
       isStatic: false
     });
-    
+
     // Enhanced manifold-based game entity creation
     this.gameEngine.createEntity(playerId, "player", {
       position: { x: x, y: y },
       velocity: { vx: 0, vy: 0 },
       health: 100
     });
-    
+
     // Enhanced manifold-based renderable creation
     this.rendererEngine.createRenderable(playerId, "circle", {
       x: x,
@@ -298,21 +318,21 @@ export class EnhancedMainApp {
       color: "#00ff00",
       zIndex: 1
     });
-    
+
     // Enhanced manifold-based AI agent creation
     this.aiEngine.createAgent(`ai_${playerId}`, {
       type: "player",
       controlledEntityId: playerId,
       state: { position: { x, y } }
     });
-    
+
     return playerId;
   }
 
   public createEnhancedEnemy(x: number, y: number): string {
     // Enhanced manifold-based enemy creation
     const enemyId = `enemy_${Date.now()}`;
-    
+
     // Enhanced manifold-based physics body creation
     this.physicsEngine.addBody(enemyId, {
       x: x,
@@ -322,14 +342,14 @@ export class EnhancedMainApp {
       mass: 1,
       isStatic: false
     });
-    
+
     // Enhanced manifold-based game entity creation
     this.gameEngine.createEntity(enemyId, "enemy", {
       position: { x: x, y: y },
       velocity: { vx: 0, vy: 0 },
       health: 50
     });
-    
+
     // Enhanced manifold-based renderable creation
     this.rendererEngine.createRenderable(enemyId, "circle", {
       x: x,
@@ -338,7 +358,7 @@ export class EnhancedMainApp {
       color: "#ff0000",
       zIndex: 1
     });
-    
+
     return enemyId;
   }
 
@@ -357,7 +377,10 @@ export class EnhancedMainApp {
         physics: this.physicsEngine.getStats(),
         audio: this.audioEngine.getStats(),
         game: this.gameEngine.getStats(),
-        ai: this.aiEngine.getStats()
+        ai: this.aiEngine.getStats(),
+        // MIA engines — included when present
+        imageEngine:  this.imageEngine.diagnostics(),
+        videoEditor:  this.videoEditor.diagnostics(),
       }
     };
   }

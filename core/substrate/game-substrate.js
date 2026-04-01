@@ -35,34 +35,27 @@ const versioned_substrate_1 = require("./versioned-substrate");
 class GameSubstrate extends versioned_substrate_1.VersionedSubstrate {
     constructor(gameId, maxVersions = 1000, entityStore = new entity_store_1.EntityStore(gameId)) {
         super();
-        this._entities = new Map();
-        this._philosophers = 0;
-        this._physicsBodies = new Map();
+        this._entities = new Map(); // entity ID index for fast iteration
+        this._physicsBodies = new Map(); // physics bodies cache
         this._gameRules = new Map();
         this._inputQueue = [];
         this._frameIndex = 0;
         this._gameState = "initializing";
         this._philosophers = 0;
+        this._gameId = gameId;
         this._entities_store = entityStore;
     }
     /**
      * Create game entity (O(1) drilling to entity space)
      */
     createEntity(entity, physics) {
-        // Store entity in current state
-        const currentState = this.getState(this.getCurrentPoint().hash);
-        currentState.set(`entity/${entity.id}`, entity);
-        // Commit the change
+        // Commit entity to versioned substrate (creates new version point)
         const changes = new Map().set(`entity/${entity.id}`, entity);
         this.commit(changes);
+        // Update local index for fast iteration (e.g. physics, collision)
+        this._entities.set(entity.id, true);
         if (physics) {
-            const physicsState = this.getState(this.getCurrentPoint().hash);
-            physicsState.set(`physics/${entity.id}`, physics);
             this.commit(new Map().set(`physics/${entity.id}`, physics));
-        }
-        return entity;
-        this._entities.set(entity.id, versioned);
-        if (physics) {
             this._physicsBodies.set(entity.id, physics);
         }
         // Audit in entity store
@@ -74,7 +67,7 @@ class GameSubstrate extends versioned_substrate_1.VersionedSubstrate {
      */
     getEntity(entityId) {
         const currentState = this.getState(this.getCurrentPoint().hash);
-        return currentState.get(`entity/${entity.id}`);
+        return currentState.get(`entity/${entityId}`);
     }
     /**
      * Update entity position/velocity (O(1))
@@ -93,26 +86,21 @@ class GameSubstrate extends versioned_substrate_1.VersionedSubstrate {
      * Register physics body (enables collision detection)
      */
     registerPhysicsBody(body) {
-        const physicsState = this.getState(this.getCurrentPoint().hash);
-        physicsState.set(`physics/${body.entityId}`, body);
+        this._physicsBodies.set(body.entityId, body);
         this.commit(new Map().set(`physics/${body.entityId}`, body));
     }
     /**
      * Get physics body
      */
     getPhysicsBody(entityId) {
-        const physicsState = this.getState(this.getCurrentPoint().hash);
-        return physicsState.get(`physics/${entityId}`);
+        return this._physicsBodies.get(entityId);
     }
     /**
      * Queue player input
      */
     queueInput(input) {
-        const inputState = this.getState(this.getCurrentPoint().hash);
-        const inputs = inputState.get("inputQueue") || [];
-        inputs.push(input);
-        inputState.set("inputQueue", inputs);
-        this.commit(new Map().set("inputQueue", inputs));
+        this._inputQueue.push(input);
+        this.commit(new Map().set("inputQueue", [...this._inputQueue]));
     }
     /**
      * Compute physics for one frame
@@ -551,4 +539,4 @@ exports.GameSubstrate = GameSubstrate;
  *
  * // Replay to frame 100
  * const historyFrame = game.replayToFrame(100);
- */ 
+ */

@@ -7,12 +7,22 @@ const physics_engine_1 = require("./engine/physics-engine");
 const audio_engine_1 = require("./engine/audio-engine");
 const game_engine_1 = require("./engine/game-engine");
 const ai_engine_1 = require("./engine/ai-engine");
+// MIA — Media Intelligence Architecture (loosely coupled — optional)
+const image_engine_1 = require("./engine/image-engine");
+const video_editor_engine_1 = require("./engine/video-editor-engine");
 // Enhanced main application with supercharged manifold capabilities
 class EnhancedMainApp {
-    constructor() {
+    /**
+     * @param miaRegistry  Optional MediaSubstrate registry.
+     *                     When supplied, ImageEngine and VideoEditorEngine
+     *                     self-register and can communicate through events.
+     *                     When omitted, they operate in full standalone mode.
+     */
+    constructor(miaRegistry) {
         this.isRunning = false;
         this.optimizationLevel = 3;
         this.initializeEnhancedEngines();
+        this.initializeMIAEngines(miaRegistry);
         this.setupEnhancedEventListeners();
     }
     initializeEnhancedEngines() {
@@ -23,6 +33,11 @@ class EnhancedMainApp {
         this.audioEngine = new audio_engine_1.AudioEngine();
         this.gameEngine = new game_engine_1.GameEngine();
         this.aiEngine = new ai_engine_1.AIEngine();
+    }
+    /** Loosely coupled — MIA engines are optional. */
+    initializeMIAEngines(registry) {
+        this.imageEngine = new image_engine_1.ImageEngine({ registry });
+        this.videoEditor = new video_editor_engine_1.VideoEditorEngine({ registry });
     }
     setupEnhancedEventListeners() {
         // Enhanced event coordination with supercharged manifold
@@ -164,23 +179,23 @@ class EnhancedMainApp {
     }
     applyBasicEnhancedOptimization() {
         // Basic enhanced manifold-based optimization
-        this.rendererEngine.setMasterVolume(0.8);
+        this.audioEngine.setMasterVolume(0.8);
     }
     applyIntermediateEnhancedOptimization() {
         // Intermediate enhanced manifold-based optimization
-        this.rendererEngine.setMasterVolume(0.9);
+        this.audioEngine.setMasterVolume(0.9);
     }
     applyAdvancedEnhancedOptimization() {
         // Advanced enhanced manifold-based optimization
-        this.rendererEngine.setMasterVolume(1.0);
+        this.audioEngine.setMasterVolume(1.0);
     }
     applyExpertEnhancedOptimization() {
         // Expert enhanced manifold-based optimization
-        this.rendererEngine.setMasterVolume(1.0);
+        this.audioEngine.setMasterVolume(1.0);
     }
     applyMasterEnhancedOptimization() {
         // Master enhanced manifold-based optimization
-        this.rendererEngine.setMasterVolume(1.0);
+        this.audioEngine.setMasterVolume(1.0);
     }
     renderEnhanced() {
         // Enhanced manifold-based rendering
@@ -306,7 +321,10 @@ class EnhancedMainApp {
                 physics: this.physicsEngine.getStats(),
                 audio: this.audioEngine.getStats(),
                 game: this.gameEngine.getStats(),
-                ai: this.aiEngine.getStats()
+                ai: this.aiEngine.getStats(),
+                // MIA engines — included when present
+                imageEngine: this.imageEngine.diagnostics(),
+                videoEditor: this.videoEditor.diagnostics(),
             }
         };
     }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zenxy Experiences - Manifold Gaming</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../lib/fonts/fonts.css">
   <style>
     :root {
       --bg-void: #0a0a10; --bg-panel: rgba(15, 15, 25, 0.85);
@@ -16,7 +16,7 @@
     body { background: var(--bg-void); color: var(--text-primary); font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
     canvas#bg { position: fixed; top: 0; left: 0; z-index: 0; }
     .overlay { position: relative; z-index: 1; }
-    
+
     header {
       text-align: center; padding: 60px 20px 30px;
       background: linear-gradient(180deg, rgba(10,10,15,0) 0%, rgba(10,10,15,0.95) 100%);
@@ -28,7 +28,7 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .subtitle { font-size: 1rem; color: #888; margin-top: 10px; letter-spacing: 0.2em; }
-    
+
     .grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 24px; padding: 40px 5%; max-width: 1600px; margin: 0 auto;
@@ -51,7 +51,7 @@
     .c2 .card-img { background: linear-gradient(135deg, #002020, #001a1a, #000d20); }
     .c3 .card-img { background: linear-gradient(135deg, #200010, #1a000d, #200005); }
     .c4 .card-img { background: linear-gradient(135deg, #0d1a00, #001a0d, #000d1a); }
-    
+
     .card-body { padding: 18px; }
     .card-body h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; color: #fff; }
     .card-body p { font-size: 0.85rem; color: #999; line-height: 1.4; }
@@ -60,7 +60,7 @@
       font-size: 0.7rem; margin-top: 10px; margin-right: 4px;
       border: 1px solid var(--border-glow); color: var(--accent-cyan);
     }
-    
+
     footer { text-align: center; padding: 50px 20px; color: #555; font-size: 0.8rem; letter-spacing: 0.1em; }
   </style>
 </head>
@@ -76,7 +76,7 @@
     <div class="grid" id="appGrid"></div>
     <footer>© 2024-2026 Kenneth Bingham • Manifold Platform • CC BY 4.0</footer>
   </div>
-  
+
   <script>
     const apps = [
       {name:"BrickBreaker 3D",desc:"Smash bricks in 3D space. Physics via saddle reflection.",icon:"🧱",tags:["3D","Physics","Game"],cat:"c1",url:"brickbreaker/index.html"},
@@ -100,7 +100,7 @@
       {name:"State Designer",desc:"Visual finite state machine builder.",icon:"🔄",tags:["FSM","Design"],cat:"c3",url:"state/index.html"},
       {name:"Cube Explorer",desc:"Interactive 7×7×7 cube visualizer.",icon:"🧊",tags:["3D","Explorer"],cat:"c4",url:"cube/index.html"}
     ];
-    
+
     const grid = document.getElementById('appGrid');
     apps.forEach(a => {
       const card = document.createElement('a');
@@ -109,7 +109,7 @@
       card.innerHTML = `<div class="card-img">${a.icon}</div><div class="card-body"><h3>${a.name}</h3><p>${a.desc}</p><div>${a.tags.map(t => '<span class="tag">' + t + '</span>').join('')}</div></div>`;
       grid.appendChild(card);
     });
-    
+
     // Background saddle animation
     const c = document.getElementById('bg'), ctx = c.getContext('2d');
     function resize() { c.width = innerWidth; c.height = innerHeight; }

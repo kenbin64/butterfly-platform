@@ -121,20 +121,29 @@ describe("PhysicsEngine", () => {
         expect(allBodies.some(b => b.id === "body2")).toBe(true);
         expect(allBodies.some(b => b.id === "body3")).toBe(true);
     });
-    test("should handle collision detection and bounds", async () => {
+    test("should handle collision detection and bounds", () => {
         const bodyId = "boundary-body";
         // Create a body that will hit the right boundary
         physicsEngine.addBody(bodyId, {
             x: 990, // Close to right boundary (1000)
             y: 300,
-            vx: 50, // Moving right fast
+            vx: 200, // Moving right fast
             vy: 0,
             mass: 1,
             isStatic: false
         });
+        // Manually tick the engine instead of relying on setInterval timing.
+        // The engine must be running for update() to apply.
         physicsEngine.start();
-        // Wait for collision
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Clear the internal interval so we control ticks deterministically.
+        if (physicsEngine.tickInterval) {
+            clearInterval(physicsEngine.tickInterval);
+            physicsEngine.tickInterval = null;
+        }
+        // Advance several frames — enough for the body to reach x=1000 and bounce.
+        for (let i = 0; i < 10; i++) {
+            physicsEngine.update(1 / 60);
+        }
         const body = physicsEngine.getBody(bodyId);
         expect(body.x).toBeLessThanOrEqual(1000); // Should not exceed boundary
         expect(body.velocity.x).toBeLessThan(0); // Should bounce back (negative velocity)
