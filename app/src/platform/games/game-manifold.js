@@ -16,8 +16,15 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-// Import manifold-native primitives (CommonJS for browser script compat)
-const { RepresentationTable } = require("../../../../core/substrate/representation-table");
+// ─── Lightweight RepresentationTable (browser-side, address-only) ──────────
+class GameRepTable {
+  constructor(name) { this.name = name; this._d = new Map(); this._s = new Map(); }
+  set(key, value) { this._d.set(key, value); }
+  get(key) { return this._d.get(key); }
+  setString(key, value) { this._s.set(key, value); }
+  getString(key) { return this._s.get(key); }
+  get size() { return this._d.size + this._s.size; }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GAME REGISTRY — All games as RepresentationTables on the manifold
@@ -25,39 +32,29 @@ const { RepresentationTable } = require("../../../../core/substrate/representati
 
 class GameRegistry {
   constructor() {
-    /** @type {Map<string, RepresentationTable>} game id → RepresentationTable */
+    /** @type {Map<string, GameRepTable>} game id → RepresentationTable */
     this._tables = new Map();
   }
 
-  /**
-   * Register a game — stores config as PathExpr addresses.
-   * @param {string} id
-   * @param {{ name: string, icon: string, desc: string, minPlayers: number, maxPlayers: number, aiSupport: boolean, url: string }} config
-   */
   register(id, config) {
-    const table = new RepresentationTable(`game:${id}`);
+    const table = new GameRepTable(`game:${id}`);
     table.setString("id", id);
     table.setString("name", config.name);
     table.setString("icon", config.icon);
     table.setString("desc", config.desc);
-    table.set("minPlayers", config.minPlayers, 3);  // section 3 = GAME
-    table.set("maxPlayers", config.maxPlayers, 3);
-    table.set("aiSupport", config.aiSupport ? 1 : 0, 3);
+    table.set("minPlayers", config.minPlayers);
+    table.set("maxPlayers", config.maxPlayers);
+    table.set("aiSupport", config.aiSupport ? 1 : 0);
     table.setString("url", config.url);
     this._tables.set(id, table);
   }
 
-  /**
-   * Get a game config — materialized from its RepresentationTable.
-   * Materialization is the engine's job, not the manifold's.
-   */
   get(id) {
     const table = this._tables.get(id);
     if (!table) return undefined;
     return this._materialize(id, table);
   }
 
-  /** List all registered games (finite set of discovered addresses). */
   list() {
     const result = [];
     for (const [id, table] of this._tables) {
@@ -66,7 +63,6 @@ class GameRegistry {
     return result;
   }
 
-  /** Materialize game config from RepresentationTable (engine's job). */
   _materialize(id, table) {
     return {
       id: table.getString("id") || id,
@@ -80,7 +76,6 @@ class GameRegistry {
     };
   }
 
-  /** Number of registered games. */
   get size() { return this._tables.size; }
 }
 

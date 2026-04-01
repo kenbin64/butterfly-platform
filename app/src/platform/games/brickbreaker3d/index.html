@@ -3,110 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrickBreaker 3D - Manifold Gaming</title>
+  <title>BrickBreaker 3D — Manifold Gaming</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="../../lib/three/three.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #0a0a1a, #1a0a2a);
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-    }
+    body { background: #030008; color: #f0e6ff; font-family: 'Rajdhani', sans-serif; overflow: hidden; }
     #container { width: 100vw; height: 100vh; position: relative; }
     canvas { display: block; }
-
     #hud {
       position: absolute; top: 20px; left: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 15px 25px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 170, 0, 0.3);
+      background: rgba(8,2,20,0.88); padding: 15px 25px; border-radius: 12px;
+      border: 1px solid rgba(255,45,149,0.3); backdrop-filter: blur(10px); min-width: 200px;
     }
-    #hud h2 { color: #ffaa00; margin-bottom: 10px; font-size: 1.2em; }
-    #hud .stat { display: flex; justify-content: space-between; margin: 5px 0; }
-    #hud .stat span:first-child { color: #888; }
-    #hud .stat span:last-child { color: #fff; font-weight: bold; }
-
+    #hud h2 { color: #ff2d95; margin-bottom: 10px; font-size: 1.1em; font-family: 'Orbitron', sans-serif; }
+    .player-scores { display: flex; flex-direction: column; gap: 6px; }
+    .player-score-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .player-score-row .pname { font-size: 0.85em; }
+    .player-score-row .pscore { font-weight: bold; font-family: 'Orbitron', sans-serif; font-size: 0.9em; }
+    .stat { display: flex; justify-content: space-between; margin: 4px 0; }
+    .stat span:first-child { color: #9b8ab8; }
+    .stat span:last-child { color: #f0e6ff; font-weight: bold; }
+    .stat-divider { border: none; border-top: 1px solid rgba(178,77,255,0.2); margin: 8px 0; }
     #drill-viz {
       position: absolute; bottom: 20px; left: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 255, 136, 0.3);
+      background: rgba(8,2,20,0.88); padding: 12px 15px; border-radius: 10px;
+      border: 1px solid rgba(0,212,255,0.25); backdrop-filter: blur(10px);
     }
-    #drill-viz h3 { color: #00ff88; margin-bottom: 8px; font-size: 0.9em; }
-    .drill-sections { display: flex; gap: 4px; }
-    .drill-section {
-      width: 30px; height: 30px;
-      border-radius: 4px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: bold;
-      transition: all 0.2s;
-    }
-    .drill-section.turnkey { border: 2px solid #ffaa00; }
-    .drill-section.active { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-
-    #start-screen {
-      position: absolute; inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 100;
-    }
-    #start-screen h1 { color: #ffaa00; font-size: 3em; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255, 170, 0, 0.5); }
-    #start-screen p { color: #888; margin-bottom: 30px; }
-    #start-screen button {
-      padding: 15px 40px; font-size: 1.2em;
-      background: linear-gradient(135deg, #ffaa00, #ff6600);
-      border: none; border-radius: 8px; cursor: pointer;
-      color: #000; font-weight: bold;
-      transition: transform 0.2s;
-    }
-    #start-screen button:hover { transform: scale(1.05); }
-
-    #controls-hint {
-      position: absolute; bottom: 20px; right: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 10px 15px; border-radius: 8px;
-      font-size: 0.8em; color: #888;
-    }
+    #drill-viz h3 { color: #00d4ff; margin-bottom: 6px; font-size: 0.8em; font-family: 'Orbitron', sans-serif; }
+    .drill-sections { display: flex; gap: 3px; }
+    .drill-section { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; transition: all 0.2s; }
+    .drill-section.active { box-shadow: 0 0 10px rgba(255,255,255,0.4); }
+    #controls-hint { position: absolute; bottom: 20px; right: 20px; background: rgba(8,2,20,0.75); padding: 10px 15px; border-radius: 8px; font-size: 0.8em; color: #5a4a72; }
+    #start-screen { position: absolute; inset: 0; background: rgba(3,0,8,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+    #start-screen h1 { font-family: 'Orbitron', sans-serif; font-size: 2.8em; font-weight: 900; background: linear-gradient(90deg,#ff2d95,#00d4ff,#b24dff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+    #start-screen .subtitle { color: #5a4a72; margin-bottom: 30px; font-size: 1rem; letter-spacing: 0.1em; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; max-width: 480px; width: 90%; }
+    .mode-btn { background: rgba(8,2,20,0.88); border: 1px solid rgba(178,77,255,0.25); border-radius: 12px; padding: 18px 14px; cursor: pointer; text-align: center; color: #f0e6ff; transition: all 0.3s; position: relative; overflow: hidden; }
+    .mode-btn:hover { border-color: #00d4ff; box-shadow: 0 0 21px rgba(0,212,255,0.2); transform: translateY(-2px); }
+    .mode-btn .mode-icon { font-size: 2rem; display: block; margin-bottom: 6px; }
+    .mode-btn .mode-label { font-family: 'Orbitron', sans-serif; font-size: 0.85em; font-weight: 700; }
+    .mode-btn .mode-desc { font-size: 0.75em; color: #9b8ab8; margin-top: 4px; }
+    .mode-btn.featured { border-color: rgba(255,45,149,0.4); }
+    .mode-btn.featured::after { content: 'FREE'; position: absolute; top: 8px; right: 8px; background: #ff2d95; color: #fff; font-size: 0.6em; padding: 2px 6px; border-radius: 4px; font-family: 'Orbitron', sans-serif; }
+    #player-select, #invite-screen { display: none; flex-direction: column; align-items: center; gap: 16px; position: absolute; inset: 0; background: rgba(3,0,8,0.92); justify-content: center; z-index: 101; }
+    #player-select h2, #invite-screen h2 { font-family: 'Orbitron', sans-serif; color: #00d4ff; font-size: 1.6em; }
+    .player-count-btns { display: flex; gap: 12px; }
+    .pcount-btn { width: 70px; height: 70px; border-radius: 12px; background: rgba(8,2,20,0.88); border: 1px solid rgba(178,77,255,0.3); color: #f0e6ff; font-family: 'Orbitron', sans-serif; font-size: 1.8em; font-weight: 900; cursor: pointer; transition: all 0.3s; }
+    .pcount-btn:hover { border-color: #ff2d95; box-shadow: 0 0 21px rgba(255,45,149,0.3); transform: scale(1.08); }
+    .back-btn { background: none; border: 1px solid rgba(178,77,255,0.2); color: #9b8ab8; padding: 8px 24px; border-radius: 8px; cursor: pointer; font-size: 0.9em; margin-top: 10px; }
+    .invite-code { font-family: 'Orbitron', sans-serif; font-size: 2.5em; letter-spacing: 0.3em; color: #ff2d95; text-shadow: 0 0 21px rgba(255,45,149,0.5); }
+    #invite-screen input { background: rgba(8,2,20,0.9); border: 1px solid rgba(178,77,255,0.3); color: #f0e6ff; padding: 10px 16px; border-radius: 8px; font-size: 1em; width: 260px; text-align: center; font-family: 'Rajdhani', sans-serif; }
+    #invite-screen input:focus { outline: none; border-color: #00d4ff; }
+    .invite-start-btn { padding: 12px 36px; font-size: 1.1em; background: linear-gradient(135deg,#ff2d95,#b24dff); border: none; border-radius: 8px; cursor: pointer; color: #fff; font-weight: bold; font-family: 'Orbitron', sans-serif; transition: transform 0.2s; }
+    .invite-start-btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
   <div id="container">
     <div id="hud">
-      <h2>◇ BrickBreaker 3D ◇</h2>
-      <div class="stat"><span>Score</span><span id="score">0</span></div>
+      <h2>◇ BrickBreaker 3D</h2>
+      <div class="player-scores" id="player-scores"></div>
+      <hr class="stat-divider">
       <div class="stat"><span>Level</span><span id="level">1</span></div>
-      <div class="stat"><span>Lives</span><span id="lives">3</span></div>
       <div class="stat"><span>Bricks</span><span id="bricks">0</span></div>
     </div>
-
     <div id="drill-viz">
-      <h3>◇ Manifold Helix State ◇</h3>
+      <h3>◇ Helix State</h3>
       <div class="drill-sections">
-        <div class="drill-section" style="background: #ff4444;">1</div>
-        <div class="drill-section turnkey" style="background: #ffaa00;">2</div>
-        <div class="drill-section" style="background: #44cc44;">3</div>
-        <div class="drill-section turnkey" style="background: #4488ff;">4</div>
-        <div class="drill-section" style="background: #cc44cc;">5</div>
-        <div class="drill-section turnkey" style="background: #ff8844;">6</div>
-        <div class="drill-section" style="background: #888888;">7</div>
+        <div class="drill-section" style="background:#ff4444;">1</div>
+        <div class="drill-section" style="background:#ffaa00;">2</div>
+        <div class="drill-section" style="background:#44cc44;">3</div>
+        <div class="drill-section" style="background:#4488ff;">4</div>
+        <div class="drill-section" style="background:#cc44cc;">5</div>
+        <div class="drill-section" style="background:#ff8844;">6</div>
+        <div class="drill-section" style="background:#888888;">7</div>
       </div>
     </div>
-
-    <div id="controls-hint">
-      Mouse: Move Paddle | Space: Launch Ball | R: Reset
-    </div>
-
+    <div id="controls-hint">Mouse: Move Paddle · Space: Launch · R: Reset</div>
     <div id="start-screen">
       <h1>🧱 BrickBreaker 3D</h1>
-      <p>Saddle Surface Physics — z = x·y Manifold</p>
-      <button onclick="startGame()">▶ START GAME</button>
+      <p class="subtitle">Saddle Surface Physics — z = x · y</p>
+      <div class="mode-grid">
+        <div class="mode-btn featured" onclick="BB3D.selectMode('single')">
+          <span class="mode-icon">🎮</span><span class="mode-label">Solo</span>
+          <span class="mode-desc">1 paddle · 1 ball · no signup</span>
+        </div>
+        <div class="mode-btn" onclick="BB3D.selectMode('bots')">
+          <span class="mode-icon">🤖</span><span class="mode-label">vs Bots</span>
+          <span class="mode-desc">2-4 players · local AI</span>
+        </div>
+        <div class="mode-btn" onclick="BB3D.selectMode('matchmaker')">
+          <span class="mode-icon">🌐</span><span class="mode-label">Online</span>
+          <span class="mode-desc">matchmaker · registered</span>
+        </div>
+        <div class="mode-btn" onclick="BB3D.selectMode('invite')">
+          <span class="mode-icon">🔑</span><span class="mode-label">Invite Code</span>
+          <span class="mode-desc">share code · guests welcome</span>
+        </div>
+      </div>
+    </div>
+    <div id="player-select">
+      <h2>How Many Players?</h2>
+      <div class="player-count-btns">
+        <button class="pcount-btn" onclick="BB3D.startWithBots(2)">2</button>
+        <button class="pcount-btn" onclick="BB3D.startWithBots(3)">3</button>
+        <button class="pcount-btn" onclick="BB3D.startWithBots(4)">4</button>
+      </div>
+      <button class="back-btn" onclick="BB3D.backToModes()">← Back</button>
+    </div>
+    <div id="invite-screen">
+      <h2>Invite Code</h2>
+      <div class="invite-code" id="generated-code"></div>
+      <p style="color:#5a4a72;font-size:0.85em;">Share this code with friends</p>
+      <p style="color:#9b8ab8;margin-top:16px;">— or join a game —</p>
+      <input id="invite-input" placeholder="Enter invite code" maxlength="6">
+      <button class="invite-start-btn" onclick="BB3D.joinByInvite()">Join Game</button>
+      <button class="back-btn" onclick="BB3D.backToModes()">← Back</button>
     </div>
   </div>
-
   <script src="brickbreaker3d-game.js"></script>
 </body>
 </html>

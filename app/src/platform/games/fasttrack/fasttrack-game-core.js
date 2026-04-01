@@ -699,7 +699,8 @@ function calculateValidMoves() {
 
           // ── CHOICE: Enter FT when landing on an FT hole ──
           // Also offer enterFastTrack so player can gain FT status on this turn
-          if (dest.startsWith('ft-') && !peg.onFasttrack && !rules.noFastTrack) {
+          // Skip if peg must exit FT area (e.g., just exited bullseye)
+          if (dest.startsWith('ft-') && !peg.onFasttrack && !rules.noFastTrack && !peg.mustExitFasttrack) {
             moves.push({ type:'enterFastTrack', pegIdx:pi, dest, steps, from:peg.holeId, path: trackSeq.slice(0, steps) });
           }
 
@@ -741,7 +742,8 @@ function calculateValidMoves() {
 
       // FastTrack ring traversal — peg is ON an FT hole but NOT yet in FT mode
       // Offers to enter FT and traverse the inner ring using the card's value
-      if (getHoleType(peg.holeId) === 'fasttrack' && !peg.onFasttrack && !rules.noFastTrack) {
+      // Skip if peg just exited bullseye (mustExitFasttrack) — it should head to safe zone
+      if (getHoleType(peg.holeId) === 'fasttrack' && !peg.onFasttrack && !rules.noFastTrack && !peg.mustExitFasttrack) {
         const ftIdx = parseInt(peg.holeId.replace('ft-',''));
         const ftSeq = [];
         for (let fi = 1; fi <= 6; fi++) {
@@ -1019,8 +1021,11 @@ function showMoveHints() {
           icon = '🏠';
           label = `${dotName} → ${who}'s home`;
         } else {
+          const card = state.deck.get('currentCard');
+          const cardRules = card ? CARDS[card.value] : null;
+          const isBackward = cardRules && cardRules.direction === 'backward';
           icon = s <= 3 ? '👣' : '🏃';
-          label = `${dotName} forward ${s} space${s > 1 ? 's' : ''}`;
+          label = `${dotName} ${isBackward ? 'backward' : 'forward'} ${s} space${s > 1 ? 's' : ''}`;
         }
         if (cut) label += cut;
         break;
@@ -1270,15 +1275,21 @@ function executeMove(moveIdx) {
         peg.eligibleForSafeZone = true;
       }
       placePeg(peg, move.dest, ci);
+      // Clear mustExitFasttrack once the peg moves away from the FT hole
+      if (peg.mustExitFasttrack && getHoleType(move.dest) !== 'fasttrack') {
+        peg.mustExitFasttrack = false;
+      }
       if (getHoleType(move.dest) === 'safezone') {
         peg.lockedToSafeZone = true;
+        peg.onFasttrack = false;
+        peg.mustExitFasttrack = false;
         peg.mood = 'RELAXED';
         _deferredCutscenes.push(['safeZone', {
           peg, playerColor: player.color, playerName: player.name, playerId: ci
         }]);
       }
-      // FT landing cutscene — when regular move lands on an FT hole
-      if (getHoleType(move.dest) === 'fasttrack' && !peg.onFasttrack) {
+      // FT landing cutscene — when regular move lands on an FT hole (not bullseye exit pegs)
+      if (getHoleType(move.dest) === 'fasttrack' && !peg.onFasttrack && !peg.mustExitFasttrack) {
         _deferredCutscenes.push(['fasttrack', {
           peg, playerColor: player.color, playerName: player.name, playerId: ci
         }]);

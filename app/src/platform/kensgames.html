@@ -3,12 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KensGames - Diamond Drill Gaming Platform</title>
+  <title>KEN'S GAMES — 80s Arcade Manifold Platform</title>
   <link rel="stylesheet" href="lib/fonts/fonts.css">
   <link rel="stylesheet" href="kensgames.css">
 </head>
 <body>
-  <canvas id="manifold-bg"></canvas>
+  <!-- Three.js 3D saddle background -->
+  <div id="three-bg"></div>
+
+  <!-- CRT scanline overlay -->
+  <div class="crt-overlay"></div>
+
+  <!-- Neon arcade corridor walls -->
+  <div class="arcade-wall-left"></div>
+  <div class="arcade-wall-right"></div>
+
   <div class="platform-overlay">
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -17,8 +26,8 @@
     <section id="auth-screen" class="screen active">
       <div class="logo-container">
         <div class="drill-logo">◈</div>
-        <h1 class="logo-text">KENSGAMES</h1>
-        <p class="tagline">Diamond Drill Gaming • z=xy Manifold Engine</p>
+        <h1 class="logo-text">KEN'S GAMES</h1>
+        <p class="tagline">80s Arcade Manifold • z = x · y</p>
       </div>
 
       <div class="auth-card glass-panel">
@@ -33,7 +42,7 @@
             <div class="avatar-grid" id="avatar-grid"></div>
           </div>
           <button class="btn btn-primary" onclick="KensGames.enterPlatform()">
-            ⟐ Enter KensGames
+            ⟐ Enter Ken's Games
           </button>
         </div>
 
@@ -44,7 +53,7 @@
 
       <div class="manifold-badge">
         <span class="seed-icon">◇</span>
-        <span>Substrate Seed Storage • 99.99% Compression</span>
+        <span>Substrate Seed Architecture • z = x · y</span>
       </div>
     </section>
 
@@ -53,12 +62,21 @@
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <section id="lobby-screen" class="screen">
       <header class="platform-header">
-        <div class="header-logo">◈ KENSGAMES</div>
+        <div class="header-logo">◈ KEN'S GAMES</div>
         <div class="user-info">
           <span class="username" id="display-name">Player</span>
           <span class="avatar" id="display-avatar">👤</span>
         </div>
       </header>
+
+      <!-- 3D Manifold Widget — rotating helix visualization -->
+      <div class="lobby-hero">
+        <div class="lobby-3d-widget" id="lobby-3d-widget"></div>
+        <div class="lobby-hero-text">
+          <h2 class="hero-title">The Manifold Arcade</h2>
+          <p class="hero-sub">7-section helix • z = x · y • dimensional substrate</p>
+        </div>
+      </div>
 
       <!-- Game Selection -->
       <div class="games-section">
@@ -137,6 +155,7 @@
     </section>
   </div>
 
+  <script src="lib/three/three.min.js"></script>
   <script src="games/game-manifold.js"></script>
   <script src="lobby/lobby-manifold.js"></script>
   <script src="kensgames.js"></script>

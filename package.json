@@ -1,6 +1,6 @@
 {
   "name": "manifold-engine",
-  "version": "1.0.0",
+  "version": "0.2.0-dev",
   "description": "Manifold-based dimensional programming engine",
   "main": "app/src/index.ts",
   "scripts": {

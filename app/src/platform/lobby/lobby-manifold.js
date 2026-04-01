@@ -23,8 +23,26 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-const { RepresentationTable } = require("../../../../core/substrate/representation-table");
-const { discoverPath, evaluatePath } = require("../../../../core/substrate/path-expressions");
+// ─── Lightweight RepresentationTable (browser-side, address-only) ──────────
+class LobbyRepTable {
+  constructor(name) { this.name = name; this._d = new Map(); this._s = new Map(); }
+  set(key, value) { this._d.set(key, value); }
+  get(key) { return this._d.get(key); }
+  setString(key, value) { this._s.set(key, value); }
+  getString(key) { return this._s.get(key); }
+  has(key) { return this._d.has(key) || this._s.has(key); }
+  get size() { return this._d.size + this._s.size; }
+}
+
+// ─── Path expressions (z = x·y manifold discovery) ───────────────────────
+function discoverPath(seed, section) {
+  const x = ((seed * 2654435761) >>> 0) / 4294967296;
+  const y = ((seed * 340573321 + section * 1337) >>> 0) / 4294967296;
+  return { x, y, section };
+}
+function evaluatePath(path) {
+  return path.x * path.y;  // z = x·y
+}
 
 const LobbyManifold = {
   /** @type {Map<string, RepresentationTable>} player id → RepresentationTable */
@@ -57,7 +75,7 @@ const LobbyManifold = {
   // ═══════════════════════════════════════════════════════════════════════
   createPlayer(username, avatarId = "👤") {
     const id = `player_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-    const table = new RepresentationTable(`player:${id}`);
+    const table = new LobbyRepTable(`player:${id}`);
 
     table.setString("id", id);
     table.setString("username", username);
@@ -110,7 +128,7 @@ const LobbyManifold = {
       if (data) {
         const player = JSON.parse(data);
         // Re-register as RepresentationTable
-        const table = new RepresentationTable(`player:${player.id}`);
+        const table = new LobbyRepTable(`player:${player.id}`);
         table.setString("id", player.id);
         table.setString("username", player.username);
         table.setString("avatarId", player.avatarId || "👤");
@@ -131,7 +149,7 @@ const LobbyManifold = {
   // ═══════════════════════════════════════════════════════════════════════
   _initAIPool() {
     this._aiTables = this.AI_NAMES.map((name, i) => {
-      const table = new RepresentationTable(`ai:${i}`);
+      const table = new LobbyRepTable(`ai:${i}`);
       table.setString("id", `ai_${i}`);
       table.setString("username", name);
       table.setString("avatarId", "🤖");
@@ -182,7 +200,7 @@ const LobbyManifold = {
     if (!hostTable) return { success: false, error: "Player not found" };
 
     const code = this._generateCode();
-    const table = new RepresentationTable(`room:${code}`);
+    const table = new LobbyRepTable(`room:${code}`);
 
     table.setString("id", `room_${Date.now()}`);
     table.setString("code", code);
@@ -393,3 +411,4 @@ if (typeof window !== "undefined") {
 if (typeof module !== "undefined") {
   module.exports = { LobbyManifold };
 }
+
